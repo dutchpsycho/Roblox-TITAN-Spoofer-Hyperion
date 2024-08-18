@@ -1,3 +1,5 @@
+# yes I am aware this looks like a grabber, its made to clear your cookies. Nothing else.
+
 import os
 import sys
 import sqlite3
