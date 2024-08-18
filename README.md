@@ -23,23 +23,45 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Fixed rare buffer overflow 
 - Removed restoration logic (Annoying to maintain, nobody uses it)
 
-## Credits 🎓
-
-- **Lead Developer:** Swedish.Psycho
-- **Contributors:** livinlavisa, .ranu., bstaipan
-
-<details>
-  <summary><h1>Features 💎</h1></summary>
+## Features
 
 - **System Spoofing** 🖥️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alternative accounts.
 - **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies from a specified browser.
 - **Headless/NonHeadless** ⚙️ Compile the spoofer without a UI so it can be put in startup / ran quicker. This is controlled by the `#define` in `Master.cpp`.
 - **No System Instability** ⚠️ This spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
 
+<details>
+  <summary><h1>Installation 📦</h1></summary>
+
+If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
+
+1. **Clone the repository:**
+
+    ```sh
+    git clone https://github.com/dutchpsycho/TITAN-Spoofer.git
+    cd TITAN-Spoofer
+    ```
+
+2. **Open the Solution File (.sln):**
+
+   - Launch Visual Studio (The purple one, not blue)
+   - Navigate to the directory where the repository was cloned.
+   - Open the `TITAN Spoofer.sln` file.
+
+3. **Configure Build Settings:**
+
+   - Ensure that the build configuration is set to `Release` mode.
+   - Select the appropriate platform (`x64`).
+
+4. **Build the Project:**
+
+   - Click on `Build > Build Solution` in the Visual Studio menu.
+   - The compiled binaries will be located in the `/x64/Release` directory.
+
 </details>
 
 <details>
-  <summary><h1>Important Information 🌐</h1></summary>
+  <summary><h1>Information 🌐</h1></summary>
 
 Hyperion is Roblox's Anti-Tamper owned by Byfron. Roblox owns Byfron.
 
@@ -72,35 +94,10 @@ Hyperion is Roblox's Anti-Tamper owned by Byfron. Roblox owns Byfron.
 
 </details>
 
-<details>
-  <summary><h1>Installation 📦</h1></summary>
+## Credits 🎓
 
-If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
-
-1. **Clone the repository:**
-
-    ```sh
-    git clone https://github.com/dutchpsycho/TITAN-Spoofer.git
-    cd TITAN-Spoofer
-    ```
-
-2. **Open the Solution File (.sln):**
-
-   - Launch Visual Studio (The purple one, not blue)
-   - Navigate to the directory where the repository was cloned.
-   - Open the `TITAN Spoofer.sln` file.
-
-3. **Configure Build Settings:**
-
-   - Ensure that the build configuration is set to `Release` mode.
-   - Select the appropriate platform (`x64`).
-
-4. **Build the Project:**
-
-   - Click on `Build > Build Solution` in the Visual Studio menu.
-   - The compiled binaries will be located in the `/x64/Release` directory.
-
-</details>
+- **Lead Developer:** Swedish.Psycho
+- **Contributors:** livinlavisa, .ranu., bstaipan
 
 ### Disclaimer ⚠️
 
