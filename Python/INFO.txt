@@ -1,0 +1,1 @@
+This was made incase something goes wrong with SQLite3 linking

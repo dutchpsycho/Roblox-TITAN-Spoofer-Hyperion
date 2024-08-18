@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Master.cpp" />
+    <ClCompile Include="Container\Browser\CacheClear.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Container\System\Hyperion.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Container\Job.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Container\System\MAC.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Container\System\Roblox.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Container\SigFuck.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Container\Header\MAC.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Header\Job.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Header\Hyperion.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Header\CacheClear.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Header\Roblox.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Header\SigFuck.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\sqlite3.h">
+      <Filter>Extern</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Header\ThreadInfoClass.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TITAN.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{ffd570ac-e54d-4c95-82db-74320daecc5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{52f9702b-79f5-4a40-95ab-3c2ac69f52ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extern">
+      <UniqueIdentifier>{89ad0511-5c37-4c45-81ed-3995eb9fb6db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{52ca6f7c-6155-4551-9f0d-2a01981a09d0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Lib\sqlite3.lib">
+      <Filter>Lib</Filter>
+    </Library>
+  </ItemGroup>
+</Project>

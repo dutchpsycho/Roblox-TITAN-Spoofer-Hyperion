@@ -1,0 +1,9 @@
+Roblox uses IOCTL_DISK_GET_PARTITION_INFO_EX to check the hardware
+
+I've thought of 3 things that might work;
+
+A. Hook DeviceIoControl and return false info (Not sure if Hyperion has this hooked)
+B. Abuse Kernel dispatch routine to modify IRP_MJ_DEVICE_CONTROL before it reaches actual driver (This would be pointless)
+C. Use the hypervisor, vmwares is locked sooo :P
+
+PS: IOCTL_DISK_GET_PARTITION_INFO_EX isn't reliable enough to HWID ban off, so dw abt that. 

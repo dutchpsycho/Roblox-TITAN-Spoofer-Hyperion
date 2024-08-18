@@ -1,0 +1,3 @@
+#ifndef HEADLESS
+IDI_ICON1 ICON "Images/TITAN.ico"
+#endif
