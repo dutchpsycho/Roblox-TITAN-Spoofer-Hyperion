@@ -23,7 +23,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Fixed rare buffer overflow 
 - Removed restoration logic (Annoying to maintain, nobody uses it)
 
-## Features
+## Features 💍
 
 - **System Spoofing** 🖥️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alternative accounts.
 - **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies from a specified browser.
