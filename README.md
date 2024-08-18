@@ -33,7 +33,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 <details>
   <summary><h2>Installation 📦</h2></summary>
 
-If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
+If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)** in the "✅︱spoofer" channel, these will be located in the "Release folder. They'll also contain the same source found here.
 
 1. **Clone the repository:**
 
