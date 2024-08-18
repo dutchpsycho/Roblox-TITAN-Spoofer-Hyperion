@@ -31,7 +31,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - **No System Instability** ⚠️ This spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
 
 <details>
-  <summary><h1>Installation 📦</h1></summary>
+  <summary><h2>Installation 📦</h2></summary>
 
 If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
 
@@ -61,7 +61,7 @@ If you prefer not to compile the code yourself, you can download the exe's from 
 </details>
 
 <details>
-  <summary><h1>Information 🌐</h1></summary>
+  <summary><h2>Information 🌐</h2></summary>
 
 Hyperion is Roblox's Anti-Tamper owned by Byfron. Roblox owns Byfron.
 
