@@ -1,4 +1,4 @@
-# Requirements and Instructions
+# Requirements and Instructions ⚡
 
 1. **SQL3.dll:**
    - Required for `TITAN_Spoofer.exe` (Library for SQLite3).

@@ -18,6 +18,9 @@ This software is intended for educational and research purposes only. Using this
 - **System Spoofing** 🛡️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alternative accounts.
 - **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies from a specified browser.
 - **Headless/NonHeadless** ⚙️ Compile the spoofer without a UI so it can be put in startup / ran quicker. This is controlled by the ``#define`` in ``Master.cpp``
+- **No System Instability** 🖥️ This spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
+
+Read -> [INFO.md](INFO.md) <- for additional details on how the executables operate, what they depend on and what you can do with them.
 
 ## Installation 📂
 
