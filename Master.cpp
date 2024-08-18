@@ -50,7 +50,7 @@ void TITAN() {
                                               #                #                      
                                                ##               ##          
 Made by HATEDAMON bitch
-https://github.com/hatesiku/TITAN-Spoofer
+https://github.com/dutchpsycho/TITAN-Spoofer
 Hyperion: 'New phone, who dis?'
 TITAN Spoofer V3.6
 
@@ -65,7 +65,7 @@ void Menu(int selected) {
         "Spoof",
         "Clear Cookies (Ban API)"
     };
-    std::string subtext = "   [ This will log you out of all your accounts. Refer to antiban-guide in TITAN. ]";
+    std::string subtext = "   [ This will log you out of all your accounts. Refer to antiban-guide in TITAN's Discord. ]";
 
     for (int i = 0; i < 2; ++i) {
         if (i == selected) {
