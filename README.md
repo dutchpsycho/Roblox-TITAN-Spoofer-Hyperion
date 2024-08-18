@@ -1,6 +1,6 @@
 # TITAN Spoofer (Roblox, Hyperion)
 
-*TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0*
+TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 ![TITAN Spoofer](./Images/eclipse.png)
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
 
@@ -13,7 +13,7 @@
 
 - Added Headless version (No UI, just run to spoof, can be put in startup)
 - Added targeted Browser Cookie Cleaning (Option on UI version, not included in Headless)
-- Added backup for this incase ``SQL3.dll`` fails or dynamic linking fails ``(Python/CookieCacheCleaner.py)``
+- Added backup for this in case `SQL3.dll` fails or dynamic linking fails `(Python/CookieCacheCleaner.py)`
 - Added DebugProtect from Roblox
 - Added useful logging
 - Added fallbacks depending on spoofs
@@ -23,13 +23,17 @@
 - Fixed rare buffer overflow 
 - Removed restoration logic (Annoying to maintain, nobody uses it)
 
+## Credits 🎓
+
+- **Lead Developer:** Swedish.Psycho
+- **Contributors:** livinlavisa, .ranu., bstaipan
 
 <details>
   <summary><h1>Features 💎</h1></summary>
 
 - **System Spoofing** 🖥️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alternative accounts.
 - **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies from a specified browser.
-- **Headless/NonHeadless** ⚙️ Compile the spoofer without a UI so it can be put in startup / ran quicker. This is controlled by the ``#define`` in ``Master.cpp``
+- **Headless/NonHeadless** ⚙️ Compile the spoofer without a UI so it can be put in startup / ran quicker. This is controlled by the `#define` in `Master.cpp`.
 - **No System Instability** ⚠️ This spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
 
 </details>
@@ -68,11 +72,10 @@ Hyperion is Roblox's Anti-Tamper owned by Byfron. Roblox owns Byfron.
 
 </details>
 
-
 <details>
   <summary><h1>Installation 📦</h1></summary>
 
-If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)** Otherwise, follow the guide below.
+If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
 
 1. **Clone the repository:**
 
@@ -96,6 +99,8 @@ If you prefer not to compile the code yourself, you can download the exe's from 
 
    - Click on `Build > Build Solution` in the Visual Studio menu.
    - The compiled binaries will be located in the `/x64/Release` directory.
+
+</details>
 
 ### Disclaimer ⚠️
 
