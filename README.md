@@ -2,6 +2,7 @@
 
 TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 ![TITAN Spoofer](./Images/moon.png)
+![TITAN Spoofer](./Images/SubRoutine.png)
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
 
 **[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection mechanisms and Roblox's ban API.
