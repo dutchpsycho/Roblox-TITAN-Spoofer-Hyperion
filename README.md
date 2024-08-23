@@ -19,7 +19,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Removed useless functionality (SigFucker Mem)
 
 <details>
-  <summary><h2># V.3.1 -> V3.6 📈</h2></summary>
+  <summary><h2>V.3.1 -> V3.6 📈</h2></summary>
 
 - Added Headless version (No UI, just run to spoof, can be put in startup)
 - Added targeted Browser Cookie Cleaning (Option on UI version, not included in Headless)
