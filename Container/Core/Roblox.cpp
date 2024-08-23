@@ -43,7 +43,7 @@ std::string getSystemDrive() {
 }
 
 void ClearRoblox() {
-    std::cout << "Starting Roblox clearing process..." << std::endl;
+    std::cout << "\033[38;2;0;0;255m" << "\n========== ROBLOX CLEARING PROCESS ==========\n" << "\033[0m";
 
     if (ScopeWindow("Roblox") && (ScopeProcess("RobloxPlayerBeta.exe") || ScopeProcess("Roblox Client"))) {
         HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -82,11 +82,7 @@ void ClearRoblox() {
         if (!Terminate("Roblox Client")) {
             std::cerr << "Failed to terminate Roblox Client." << std::endl;
         }
-
         Sleep(500);
-    }
-    else {
-        std::cerr << "No Roblox window or process found to terminate." << std::endl;
     }
 
     char localAppDataPath[MAX_PATH];
@@ -101,7 +97,7 @@ void ClearRoblox() {
 
     std::string systemDrive = getSystemDrive();
     fs::path crashHandlerPath = fs::path(systemDrive) / "Program Files (x86)" / "Roblox" / "Versions" / "version-3243b6d003cf4642" / "RobloxCrashHandler.exe";
-    std::cout << "Removing Roblox Crash Handler: " << crashHandlerPath << std::endl;
+    std::cout << "Removing Crash Handler: " << crashHandlerPath << std::endl;
     rmFile(crashHandlerPath);
 
     char tempPath[MAX_PATH];
@@ -109,7 +105,7 @@ void ClearRoblox() {
         fs::path tempDir(tempPath);
         fs::path robloxTempPath = tempDir / "Roblox";
         if (fs::exists(robloxTempPath)) {
-            std::cout << "Clearing Roblox temp files from: " << robloxTempPath << std::endl;
+            std::cout << "Clearing Roblox %TEMP%: " << robloxTempPath << std::endl;
             for (const auto& entry : fs::directory_iterator(robloxTempPath)) {
                 if (entry.is_regular_file()) {
                     fs::remove(entry.path());
@@ -118,14 +114,14 @@ void ClearRoblox() {
         }
     }
     else {
-        std::cerr << "Failed to get Temp path." << std::endl;
+        std::cerr << "Failed to get %TEMP% path." << std::endl;
     }
 
     fs::path cTempPath = fs::path(systemDrive) / "Temp";
     if (fs::exists(cTempPath)) {
         fs::path robloxTempPath = cTempPath / "Roblox";
         if (fs::exists(robloxTempPath)) {
-            std::cout << "Clearing Roblox temp files from: " << robloxTempPath << std::endl;
+            std::cout << "Clearing: " << robloxTempPath << std::endl;
             for (const auto& entry : fs::directory_iterator(robloxTempPath)) {
                 if (entry.is_regular_file()) {
                     fs::remove(entry.path());
@@ -133,8 +129,6 @@ void ClearRoblox() {
             }
         }
     }
-
-    std::cout << "Roblox clearing process completed." << std::endl;
 }
 
 bool ScopeProcess(const std::string& processName) {
@@ -172,7 +166,6 @@ bool ScopeProcess(const std::string& processName) {
 bool ScopeWindow(const std::string& windowTitle) {
     HWND hwnd = FindWindowA(NULL, windowTitle.c_str());
     if (hwnd == NULL) {
-        std::cerr << "Window not found: " << windowTitle << std::endl;
         return false;
     }
     return true;
@@ -257,9 +250,6 @@ bool Terminate(const std::string& processName) {
                 }
             }
         } while (Process32Next(hProcessSnap, &pe32));
-    }
-    else {
-        std::cerr << "Failed to iterate through processes." << std::endl;
     }
     CloseHandle(hProcessSnap);
     return true;

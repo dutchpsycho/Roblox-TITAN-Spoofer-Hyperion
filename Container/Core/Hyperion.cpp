@@ -79,7 +79,7 @@ NTSTATUS NTAPI HookedNtSetInformationProcess(
     ULONG ProcessInformationLength) {
 
     if (ProcessInformationClass == ProcessDebugPort) {
-        std::cout << "processdebugport hook triggered, hiding debug port" << std::endl;
+        std::cout << "ProcessDebugPort hook triggered, hiding debug port" << std::endl;
         ProcessInformation = NULL;
         ProcessInformationLength = 0;
         return STATUS_SUCCESS;
@@ -105,6 +105,135 @@ void HookNtDll() {
     }
 }
 
+bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
+    HRESULT hres;
+    IWbemLocator* pLoc = nullptr;
+    IWbemServices* pSvc = nullptr;
+
+    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(hres)) {
+        std::cerr << "Failed to initialize COM, error code = 0x" << std::hex << hres << std::endl;
+        return false;
+    }
+
+    hres = CoInitializeSecurity(
+        NULL,
+        -1,
+        NULL,
+        NULL,
+        RPC_C_AUTHN_LEVEL_DEFAULT,
+        RPC_C_IMP_LEVEL_IMPERSONATE,
+        NULL,
+        EOAC_NONE,
+        NULL);
+
+    if (FAILED(hres)) {
+        std::cerr << "Failed to initialize security, error code = 0x" << std::hex << hres << std::endl;
+        CoUninitialize();
+        return false;
+    }
+
+    hres = CoCreateInstance(
+        CLSID_WbemLocator,
+        0,
+        CLSCTX_INPROC_SERVER,
+        IID_IWbemLocator,
+        (LPVOID*)&pLoc);
+
+    if (FAILED(hres) || !pLoc) {
+        std::cerr << "Failed to create iwbemlocator obj, error code = 0x" << std::hex << hres << std::endl;
+        CoUninitialize();
+        return false;
+    }
+
+    hres = pLoc->ConnectServer(
+        _bstr_t(L"ROOT\\CIMV2"),
+        NULL,
+        NULL,
+        0,
+        NULL,
+        0,
+        0,
+        &pSvc);
+
+    if (FAILED(hres) || !pSvc) {
+        std::cerr << "Could not connect to WMI namespace root\\CIMv2, error code = 0x" << std::hex << hres << std::endl;
+        if (pLoc) pLoc->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    hres = CoSetProxyBlanket(
+        pSvc,
+        RPC_C_AUTHN_WINNT,
+        RPC_C_AUTHZ_NONE,
+        NULL,
+        RPC_C_AUTHN_LEVEL_CALL,
+        RPC_C_IMP_LEVEL_IMPERSONATE,
+        NULL,
+        EOAC_NONE);
+
+    if (FAILED(hres)) {
+        std::cerr << "Could not set proxy blanket, error code = 0x" << std::hex << hres << std::endl;
+        pSvc->Release();
+        pLoc->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    IEnumWbemClassObject* pEnumerator = nullptr;
+    hres = pSvc->ExecQuery(
+        bstr_t("WQL"),
+        bstr_t(wmicCommand.c_str()),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+        NULL,
+        &pEnumerator);
+
+    if (FAILED(hres) || !pEnumerator) {
+        std::cerr << "WMI query failed, error code = 0x" << std::hex << hres << std::endl;
+        pSvc->Release();
+        pLoc->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    IWbemClassObject* pclsObj = nullptr;
+    ULONG uReturn = 0;
+
+    while (pEnumerator) {
+        HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+        if (0 == uReturn) {
+            break;
+        }
+
+        VARIANT vtProp;
+        hr = pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0);
+        if (SUCCEEDED(hr)) {
+            std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(12);
+            VARIANT vtNewVal;
+            vtNewVal.vt = VT_BSTR;
+            vtNewVal.bstrVal = _bstr_t(newValue.c_str());
+            hr = pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0);
+            if (FAILED(hr)) {
+                std::cerr << "Failed to set property value, error code = 0x" << std::hex << hr << std::endl;
+            }
+            else {
+                std::cout << "Spoofed -> " << propertyName << " New Value :: [ " << newValue << " ]" << std::endl;
+            }
+            VariantClear(&vtNewVal);
+        }
+        else {
+            std::cerr << "Failed to get property value, error code = 0x" << std::hex << hr << std::endl;
+        }
+        pclsObj->Release();
+    }
+    pSvc->Release();
+    pLoc->Release();
+    if (pEnumerator) pEnumerator->Release();
+    CoUninitialize();
+    return true;
+}
+
 bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName) {
     HKEY hKey;
     if (RegOpenKeyExW(hKeyRoot, subKey.c_str(), 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
@@ -114,7 +243,6 @@ bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& val
 
     DWORD dataSize = 0;
     if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, NULL, reinterpret_cast<DWORD*>(&dataSize)) != ERROR_SUCCESS || dataSize == 0) {
-        std::cerr << "[IGNORE] Failed to query reg value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
@@ -135,7 +263,7 @@ bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& val
         return false;
     }
 
-    std::cout << "spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
+    std::cout << "Spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << " New Value :: [ " << randomString << " ]" << std::endl;
     RegCloseKey(hKey);
     return true;
 }
@@ -171,9 +299,36 @@ bool spoofRegBinary(HKEY hKeyRoot, const std::wstring& subKey, const std::wstrin
         return false;
     }
 
-    std::cout << "spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
+    std::cout << "Spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << " New Value :: [Binary Data]" << std::endl;
     RegCloseKey(hKey);
     return true;
+}
+
+void deleteRegistryKey(const std::wstring& sid, const std::wstring& subKeyName) {
+    if (!NtOpenKey || !NtDeleteKey || !RtlInitUnicodeStringPtr || !NtClosePtr) {
+        std::cerr << "Failed to load Nt functions" << std::endl;
+        return;
+    }
+
+    HKEY hKey;
+    std::wstring keyPath = L"\\Registry\\User\\" + sid + L"\\System\\CurrentControlSet\\Control\\" + subKeyName;
+    // this needs fixing fyi
+
+    UNICODE_STRING unicodeKey;
+    RtlInitUnicodeStringPtr(&unicodeKey, keyPath.c_str());
+
+    OBJECT_ATTRIBUTES objectAttributes;
+    InitializeObjectAttributes(&objectAttributes, &unicodeKey, OBJ_CASE_INSENSITIVE, NULL, NULL);
+
+    NTSTATUS status = NtOpenKey(reinterpret_cast<PHANDLE>(&hKey), KEY_ALL_ACCESS, &objectAttributes);
+
+    if (status == STATUS_SUCCESS) {
+        status = NtDeleteKey(hKey);
+        if (status == STATUS_SUCCESS) {
+            std::wcout << L"Removed reg: " << keyPath << std::endl;
+        }
+        NtClosePtr(hKey);
+    }
 }
 
 bool spoofEDID(HKEY hKeyRoot) {
@@ -229,168 +384,13 @@ bool spoofEDID(HKEY hKeyRoot) {
             }
         }
     }
-
     RegCloseKey(hDisplayKey);
     return true;
 }
 
-bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
-    HRESULT hres;
-    IWbemLocator* pLoc = nullptr;
-    IWbemServices* pSvc = nullptr;
-
-    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
-    if (FAILED(hres)) {
-        std::cerr << "Failed to initialize com library. error code = 0x" << std::hex << hres << std::endl;
-        return false;
-    }
-
-    hres = CoInitializeSecurity(
-        NULL,
-        -1,
-        NULL,
-        NULL,
-        RPC_C_AUTHN_LEVEL_DEFAULT,
-        RPC_C_IMP_LEVEL_IMPERSONATE,
-        NULL,
-        EOAC_NONE,
-        NULL);
-
-    if (FAILED(hres)) {
-        std::cerr << "Failed to initialize security. error code = 0x" << std::hex << hres << std::endl;
-        CoUninitialize();
-        return false;
-    }
-
-    hres = CoCreateInstance(
-        CLSID_WbemLocator,
-        0,
-        CLSCTX_INPROC_SERVER,
-        IID_IWbemLocator,
-        (LPVOID*)&pLoc);
-
-    if (FAILED(hres) || !pLoc) {
-        std::cerr << "Failed to create iwbemlocator object. error code = 0x" << std::hex << hres << std::endl;
-        CoUninitialize();
-        return false;
-    }
-
-    hres = pLoc->ConnectServer(
-        _bstr_t(L"ROOT\\CIMV2"),
-        NULL,
-        NULL,
-        0,
-        NULL,
-        0,
-        0,
-        &pSvc);
-
-    if (FAILED(hres) || !pSvc) {
-        std::cerr << "Could not connect to wmi namespace root\\cimv2. error code = 0x" << std::hex << hres << std::endl;
-        if (pLoc) pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hres = CoSetProxyBlanket(
-        pSvc,
-        RPC_C_AUTHN_WINNT,
-        RPC_C_AUTHZ_NONE,
-        NULL,
-        RPC_C_AUTHN_LEVEL_CALL,
-        RPC_C_IMP_LEVEL_IMPERSONATE,
-        NULL,
-        EOAC_NONE);
-
-    if (FAILED(hres)) {
-        std::cerr << "Could not set proxy blanket. error code = 0x" << std::hex << hres << std::endl;
-        pSvc->Release();
-        pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    IEnumWbemClassObject* pEnumerator = nullptr;
-    hres = pSvc->ExecQuery(
-        bstr_t("WQL"),
-        bstr_t(wmicCommand.c_str()),
-        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-        NULL,
-        &pEnumerator);
-
-    if (FAILED(hres) || !pEnumerator) {
-        std::cerr << "WMI query Failed. error code = 0x" << std::hex << hres << std::endl;
-        pSvc->Release();
-        pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    IWbemClassObject* pclsObj = nullptr;
-    ULONG uReturn = 0;
-
-    while (pEnumerator) {
-        HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-        if (0 == uReturn) {
-            break;
-        }
-
-        VARIANT vtProp;
-        hr = pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0);
-        if (SUCCEEDED(hr)) {
-            std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(12);
-            VARIANT vtNewVal;
-            vtNewVal.vt = VT_BSTR;
-            vtNewVal.bstrVal = _bstr_t(newValue.c_str());
-            hr = pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0);
-            if (FAILED(hr)) {
-                std::cerr << "Failed to set property value. error code = 0x" << std::hex << hr << std::endl;
-            }
-            else {
-                std::cout << "Spoofed -> " << propertyName << std::endl;
-            }
-            VariantClear(&vtNewVal);
-        }
-        else {
-            std::cerr << "Failed to get property value. error code = 0x" << std::hex << hr << std::endl;
-        }
-        pclsObj->Release();
-    }
-
-    pSvc->Release();
-    pLoc->Release();
-    if (pEnumerator) pEnumerator->Release();
-    CoUninitialize();
-    return true;
-}
-
-void deleteRegistryKey(const std::wstring& sid, const std::wstring& subKeyName) {
-    if (!NtOpenKey || !NtDeleteKey || !RtlInitUnicodeStringPtr || !NtClosePtr) {
-        std::cerr << "Failed to load Nt functions" << std::endl;
-        return;
-    }
-
-    HKEY hKey;
-    std::wstring keyPath = L"\\Registry\\User\\" + sid + L"\\System\\CurrentControlSet\\Control\\" + subKeyName;
-
-    UNICODE_STRING unicodeKey;
-    RtlInitUnicodeStringPtr(&unicodeKey, keyPath.c_str());
-
-    OBJECT_ATTRIBUTES objectAttributes;
-    InitializeObjectAttributes(&objectAttributes, &unicodeKey, OBJ_CASE_INSENSITIVE, NULL, NULL);
-
-    NTSTATUS status = NtOpenKey(reinterpret_cast<PHANDLE>(&hKey), KEY_ALL_ACCESS, &objectAttributes);
-
-    if (status == STATUS_SUCCESS) {
-        status = NtDeleteKey(hKey);
-        if (status == STATUS_SUCCESS) {
-            std::wcout << L"Rmreg: " << keyPath << std::endl;
-        }
-        NtClosePtr(hKey);
-    }
-}
-
 void spoofHyperion() {
+    std::cout << "\033[38;2;128;0;128m" << "\n========== HYPERION SPOOFING ==========\n" << "\033[0m";
+
     InitializeNtFunctions();
     HookNtDll();
     spoofReg(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control", L"SystemReg"); // SysReg
@@ -434,8 +434,7 @@ void spoofHyperion() {
         }
     }
     else {
-        std::cerr << "No SIDs found" << std::endl;
+        std::cerr << "Where is your SID?" << std::endl;
     }
-
     CloseHandle(tokenHandle);
 }

@@ -9,7 +9,17 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 [![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-blue)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 [![Discord](https://img.shields.io/badge/TITAN%201.5K%20Server%20Limit-7289DA?logo=discord&logoColor=white&label)](https://discord.gg/yUWyvT9JyP)
 
-# V.3.1 -> V3.6 📈
+# V.3.6 -> V4.0 📈
+
+- Confirmed spoofer works as of banwave on 2024-08-23(23rd Aug, 2024)
+- Completely resolved all MAC spoofing issues & bugs
+- Changed to use Windows Instrumentals for MAC spoofing
+- Changed the way the CLI handles logs
+- Refactored Project Layout & Solution
+- Removed useless functionality (SigFucker Mem)
+
+<details>
+  <summary><h2># V.3.1 -> V3.6 📈</h2></summary>
 
 - Added Headless version (No UI, just run to spoof, can be put in startup)
 - Added targeted Browser Cookie Cleaning (Option on UI version, not included in Headless)
@@ -23,17 +33,19 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Fixed rare buffer overflow 
 - Removed restoration logic (Annoying to maintain, nobody uses it)
 
+</details>
+
 ## Features 💍
 
-- **System Spoofing** 🖥️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alternative accounts.
-- **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies from a specified browser.
-- **Headless/NonHeadless** ⚙️ Compile the spoofer without a UI so it can be put in startup / ran quicker. This is controlled by the `#define` in `Master.cpp`.
+- **System Spoofing** 🖥️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alt accounts.
+- **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies & trackers from a specified browser.
+- **Headless/NonHeadless** ⚙️ Compile the spoofer without a command line so it can be put in startup / ran without interference. This is controlled by the `#define HEADLESS` in `Master.cpp`.
 - **No System Instability** ⚠️ This spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
 
 <details>
   <summary><h2>Installation 📦</h2></summary>
 
-If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
+If you prefer not to compile the code yourself, you can download the exe's (binaries) from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
 
 1. **Clone the repository:**
 

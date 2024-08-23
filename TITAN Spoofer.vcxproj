@@ -11,12 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Container\Browser\CacheClear.cpp" />
-    <ClCompile Include="Container\Job.cpp" />
-    <ClCompile Include="Container\SigFuck.cpp" />
-    <ClCompile Include="Container\System\Hyperion.cpp" />
-    <ClCompile Include="Container\System\MAC.cpp" />
-    <ClCompile Include="Container\System\Roblox.cpp" />
+    <ClCompile Include="Container\Core\CacheClear.cpp" />
+    <ClCompile Include="Container\Core\Hyperion.cpp" />
+    <ClCompile Include="Container\Core\MAC.cpp" />
+    <ClCompile Include="Container\Core\Roblox.cpp" />
+    <ClCompile Include="Container\Util\Job.cpp" />
+    <ClCompile Include="Container\Util\SigFuck.cpp" />
     <ClCompile Include="Master.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -26,7 +26,6 @@
     <ClInclude Include="Container\Header\MAC.hpp" />
     <ClInclude Include="Container\Header\Roblox.hpp" />
     <ClInclude Include="Container\Header\SigFuck.hpp" />
-    <ClInclude Include="Container\Header\ThreadInfoClass.hpp" />
     <ClInclude Include="Include\sqlite3.h" />
   </ItemGroup>
   <ItemGroup>
@@ -75,11 +74,15 @@
     <IncludePath>$(SolutionDir)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Lib;$(LibraryPath)</LibraryPath>
     <PreprocessorDefinitions>_DEBUG;_CONSOLE;SQLITE_API=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    <OutDir>$(SolutionDir)$(Platform)\</OutDir>
+    <IntDir>$(ShortProjectName)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Lib;$(LibraryPath)</LibraryPath>
     <PreprocessorDefinitions>NDEBUG;_CONSOLE;SQLITE_API=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    <OutDir>$(SolutionDir)$(Platform)\</OutDir>
+    <IntDir>$(ShortProjectName)\$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

@@ -6,6 +6,5 @@
 
 void SigFucker();
 void WindowName();
-void ExcSig();
 
 #endif

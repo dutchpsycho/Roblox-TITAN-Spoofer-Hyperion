@@ -97,7 +97,7 @@ bool ClearCookiesFromDb(const std::string& cookieDbPath) {
     rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
 
     if (rc != SQLITE_OK) {
-        std::cerr << "SQL error: " << errMsg << std::endl;
+        std::cerr << "SQL err: " << errMsg << std::endl;
         sqlite3_free(errMsg);
         sqlite3_close(db);
         return false;
@@ -108,6 +108,8 @@ bool ClearCookiesFromDb(const std::string& cookieDbPath) {
 }
 
 void CacheClear() {
+    std::cout << "\033[33m" << "\n========== CACHE CLEARING PROCESS ==========\n" << "\033[0m";
+
     HWND hwnd = GetForegroundWindow();
     char windowTitle[256];
     GetWindowTextA(hwnd, windowTitle, sizeof(windowTitle));
@@ -124,7 +126,6 @@ void CacheClear() {
     if (runningBrowser.empty()) {
         HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hProcessSnap == INVALID_HANDLE_VALUE) {
-            std::cerr << "No supported browser is currently running." << std::endl;
             return;
         }
 
@@ -185,7 +186,7 @@ void CacheClear() {
                             if (entry.is_regular_file()) {
                                 std::string cookiePath = entry.path().string();
                                 if (cookiePath.find("Cookies") != std::string::npos || cookiePath.find("cookies.sqlite") != std::string::npos) {
-                                    std::cout << "Clearing cookies & trackers for " << runningBrowser << " at " << cookiePath << std::endl;
+                                    std::cout << "Clearing cookies & trackers for " << runningBrowser << " @ " << cookiePath << std::endl;
                                     ClearCookiesFromDb(cookiePath);
                                 }
                             }
@@ -198,7 +199,7 @@ void CacheClear() {
                     if (entry.is_regular_file()) {
                         std::string cookiePath = entry.path().string();
                         if (cookiePath.find("Cookies") != std::string::npos || cookiePath.find("cookies.sqlite") != std::string::npos) {
-                            std::cout << "Clearing cookies & trackers for " << runningBrowser << " at " << cookiePath << std::endl;
+                            std::cout << "Clearing cookies & trackers for " << runningBrowser << " @ " << cookiePath << std::endl;
                             ClearCookiesFromDb(cookiePath);
                         }
                     }

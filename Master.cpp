@@ -1,8 +1,8 @@
 /*
 * @Author Damon (Swedish.Psych0)
-* @License GNU Public Use
+* @License TITAN © 2024 by Damon under CC BY-NC-ND 4.0
 * @Namespace TITAN
-* @Version 3.6.0
+* @Version 4.0.0
 */
 
 #include "./Container/Header/Job.hpp"
@@ -32,32 +32,28 @@ void Colour(int color) {
 
 void TITAN() {
     std::string art = R"(
-  /###           /       #####  # /###           /    ##            ##### #     ##    
- /  ############/     ######  /  /  ############/  /####         ######  /#    #### / 
-/     #########      /#   /  /  /     #########   /  ###        /#   /  / ##    ###/  
-#     /  #          /    /  /   #     /  #           /##       /    /  /  ##    # #   
- ##  /  ##              /  /     ##  /  ##          /  ##          /  /    ##   #     
-    /  ###             ## ##        /  ###          /  ##         ## ##    ##   #     
-   ##   ##             ## ##       ##   ##         /    ##        ## ##     ##  #     
-   ##   ##           /### ##       ##   ##         /    ##        ## ##     ##  #     
-   ##   ##          / ### ##       ##   ##        /      ##       ## ##      ## #     
-   ##   ##             ## ##       ##   ##        /########       ## ##      ## #     
-    ##  ##        ##   ## ##        ##  ##       /        ##      #  ##       ###     
-     ## #      / ###   #  /          ## #      / #        ##         /        ###     
-      ###     /   ###    /            ###     / /####      ##    /##/          ##     
-       ######/     #####/              ######/ /   ####    ## / /  #####              
-         ###         ###                 ###  /     ##      #/ /     ##               
-                                              #                #                      
-                                               ##               ##          
-Made by HATEDAMON bitch
-https://github.com/dutchpsycho/TITAN-Spoofer
-Hyperion: 'New phone, who dis?'
-TITAN Spoofer V3.6
-
-)";
-    std::string white = "\033[37m";
-    std::string resetColor = "\033[0m";
-    std::cout << white << art << resetColor << std::endl;
+      /###           /       #####  # /###           /    ##            ##### #     ##    
+     /  ############/     ######  /  /  ############/  /####         ######  /#    #### / 
+    /     #########      /#   /  /  /     #########   /  ###        /#   /  / ##    ###/  
+    #     /  #          /    /  /   #     /  #           /##       /    /  /  ##    # #   
+     ##  /  ##              /  /     ##  /  ##          /  ##          /  /    ##   #     
+        /  ###             ## ##        /  ###          /  ##         ## ##    ##   #     
+       ##   ##             ## ##       ##   ##         /    ##        ## ##     ##  #     
+       ##   ##           /### ##       ##   ##         /    ##        ## ##     ##  #     
+       ##   ##          / ### ##       ##   ##        /      ##       ## ##      ## #     
+       ##   ##             ## ##       ##   ##        /########       ## ##      ## #     
+        ##  ##        ##   ## ##        ##  ##       /        ##      #  ##       ###     
+         ## #      / ###   #  /          ## #      / #        ##         /        ###     
+          ###     /   ###    /            ###     / /####      ##    /##/          ##     
+           ######/     #####/              ######/ /   ####    ## / /  #####              
+             ###         ###                 ###  /     ##      #/ /     ##               
+                                                  #                #                      
+                                                   ##               ##                    
+    )";
+    std::cout << art << std::endl;
+    std::cout << "https://github.com/dutchpsycho/TITAN-Spoofer" << std::endl;
+    std::cout << "Hyperion: 'New phone, who dis?'" << std::endl;
+    std::cout << "TITAN Spoofer V4" << std::endl;
 }
 
 void Menu(int selected) {
@@ -86,7 +82,7 @@ void _ps(const std::string& message, int color) {
     Colour(7);
 }
 
-void ShowProgress(const std::string& step) {
+void progress(const std::string& step) {
     static const char* progressChars = "|/-\\";
     for (int i = 0; i < 4; ++i) {
         std::cout << "\r" << step << " " << progressChars[i] << std::flush;
@@ -96,7 +92,7 @@ void ShowProgress(const std::string& step) {
 }
 #endif
 
-std::string generateRandomString(size_t length) {
+std::string rands(size_t length) {
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     std::string result;
     result.resize(length);
@@ -110,7 +106,7 @@ std::string generateRandomString(size_t length) {
 
 int main() {
     srand(static_cast<unsigned int>(time(nullptr)));
-    std::string windowTitle = generateRandomString(24);
+    std::string windowTitle = rands(24);
     SetConsoleTitleA(windowTitle.c_str());
 
     SigFucker();
@@ -146,15 +142,10 @@ int main() {
             switch (choice) {
             case 0:
                 ClearRoblox();
-                std::cout << "Clearing Roblox data... Done." << std::endl;
-
                 spoofMac();
-                std::cout << "Spoofing MAC addresses... Done." << std::endl;
-
                 spoofHyperion();
-                std::cout << "Spoofing Hyperion... Done." << std::endl;
 
-                _ps("System spoofed.", 10);
+                _ps("Operation Finished Successfully, no restart required.", 10);
                 system("pause");
                 break;
             case 1:
