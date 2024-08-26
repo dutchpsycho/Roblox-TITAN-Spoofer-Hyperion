@@ -22,7 +22,12 @@
 #include <cstdlib>
 #include <ctime>
 
+// for HEADLESS version do this
+// remove the // before #define HEADLESS below
 // #define HEADLESS
+// go to linker options -> System & set the subsystem to "Windows (/SUBSYSTEM"
+// go to linker -> advanced -> entry point & set it to "mainCRTStartup"
+// to revert remove the mainCRTStartup & set subsys back to "Console (/SUBSYSTEM:CONSOLE)"
 
 #ifndef HEADLESS
 void Colour(int color) {
