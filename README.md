@@ -11,7 +11,15 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 [![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-blue)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 [![Discord](https://img.shields.io/badge/TITAN%201.5K%20Server%20Limit-7289DA?logo=discord&logoColor=white&label)](https://discord.gg/yUWyvT9JyP)
 
-# V.3.6 -> V4.0 📈
+# V4.0 -> V4.2 📈
+
+- Fixed errors where you'd have to install vcruntime or msvc dll's (C++ comp tools)
+- Dynamically linked SQL3.dll (No need to keep it as an external file now)
+- Removed SQL3.dll, no longer needed.
+
+
+<details>
+  <summary><h2>V3.6 -> V4.0 📈</h2></summary>
 
 - Confirmed spoofer works as of banwave on 2024-08-23(23rd Aug, 2024)
 - Completely resolved all MAC spoofing issues & bugs
@@ -20,8 +28,9 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Refactored Project Layout & Solution
 - Removed useless functionality (SigFucker Mem)
 
+</details>
 <details>
-  <summary><h2>V.3.1 -> V3.6 📈</h2></summary>
+  <summary><h2>V3.1 -> V3.6 📈</h2></summary>
 
 - Added Headless version (No UI, just run to spoof, can be put in startup)
 - Added targeted Browser Cookie Cleaning (Option on UI version, not included in Headless)
@@ -79,29 +88,21 @@ If you prefer not to compile the code yourself, you can download the exe's from 
 
 Hyperion is Roblox's Anti-Tamper owned by Byfron. Roblox owns Byfron.
 
-1. **SQL3.dll:**
-   - Required for `TITAN_Spoofer.exe` (Library for SQLite3).
-   - If you move `TITAN_Spoofer.exe`, ensure you move `SQL3.dll` with it or create a shortcut.
-
-2. **HEADLESS_TITAN_Spoofer.exe:**
-   - Does not require `SQL3.dll`.
-   - Does not clear the Roblox cookie cache.
-   - Can be used in startup.
-
-3. **TITAN_Spoofer.exe:**
+1. **TITAN_Spoofer.exe:**
    - Includes a Command Line Interface (CLI) navigated by arrow keys.
    - Provides an option to clear your Roblox cookie cache.
    - Use this executable if you need CLI functionality.
 
-4. **HEADLESS_TITAN_Spoofer.exe:**
+2. **HEADLESS_TITAN_Spoofer.exe:**
    - Does not include the CLI.
+   - Does not CacheClear
    - Acts the same as the "Spoof" command in `TITAN_Spoofer.exe`.
    - Controlled by the `#define HEADLESS` directive in `Master.cpp`.
 
-5. **Cache Cleaner:**
+3. **Cache Cleaner:**
    - If the cache cleaner in `TITAN_Spoofer.exe` is not working, use `Python/CookieCacheCleaner.py` to clear the Roblox cookie cache.
 
-6. **Spoofing on Startup:**
+4. **Spoofing on Startup:**
    - Press `Windows + R`, type `shell:startup`, and press Enter.
    - Create a shortcut to `HEADLESS_TITAN_Spoofer.exe` in the startup folder, or drag the `.exe` file there.
    - Note: This method does not work for `TITAN_Spoofer.exe` (CLI version).
