@@ -22,14 +22,26 @@
 #include <cstdlib>
 #include <ctime>
 
-// for HEADLESS version do this
-// remove the // before #define HEADLESS below
+// If you want to use headless mode, you need to do a couple things.
+// First, right click the project (right side, TITAN Spoofer)
+// Second, click Linker dropdown & click advanced. change entry point to "MainCRTStartup"
+// Third, click system and click the dropdown and switch it to "SUBSYSTEM::WINDOWS"
+// Finally, uncomment the line below (Remove //)
 // #define HEADLESS
-// go to linker options -> System & set the subsystem to "Windows (/SUBSYSTEM"
-// go to linker -> advanced -> entry point & set it to "mainCRTStartup"
-// to revert remove the mainCRTStartup & set subsys back to "Console (/SUBSYSTEM:CONSOLE)"
 
-#ifndef HEADLESS
+#ifdef HEADLESS
+
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    srand(static_cast<unsigned int>(time(nullptr)));
+    SigFucker();
+    ClearRoblox();
+    spoofMac();
+    spoofHyperion();
+    return 0;
+}
+
+#else
+
 void Colour(int color) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
@@ -87,16 +99,6 @@ void _ps(const std::string& message, int color) {
     Colour(7);
 }
 
-void progress(const std::string& step) {
-    static const char* progressChars = "|/-\\";
-    for (int i = 0; i < 4; ++i) {
-        std::cout << "\r" << step << " " << progressChars[i] << std::flush;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    }
-    std::cout << "\r" << step << " done!" << std::endl;
-}
-#endif
-
 std::string rands(size_t length) {
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     std::string result;
@@ -109,18 +111,21 @@ std::string rands(size_t length) {
     return result;
 }
 
+void progress(const std::string& step) {
+    static const char* progressChars = "|/-\\";
+    for (int i = 0; i < 4; ++i) {
+        std::cout << "\r" << step << " " << progressChars[i] << std::flush;
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+    std::cout << "\r" << step << " done!" << std::endl;
+}
+
 int main() {
     srand(static_cast<unsigned int>(time(nullptr)));
     std::string windowTitle = rands(24);
     SetConsoleTitleA(windowTitle.c_str());
 
     SigFucker();
-
-#ifdef HEADLESS
-    ClearRoblox();
-    spoofMac();
-    spoofHyperion();
-#else
     TITAN();
 
     int choice = 0;
@@ -164,6 +169,7 @@ int main() {
             }
         }
     }
-#endif
     return 0;
 }
+
+#endif

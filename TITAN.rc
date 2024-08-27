@@ -1,3 +1,7 @@
 #ifndef HEADLESS
 IDI_ICON1 ICON "Images/TITAN.ico"
 #endif
+
+#define IDR_SQLITE_DLL 101
+
+IDR_SQLITE_DLL RCDATA "SQL3.dll"

