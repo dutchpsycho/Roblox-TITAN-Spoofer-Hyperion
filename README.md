@@ -50,7 +50,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - **System Spoofing** 🖥️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alt accounts.
 - **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies & trackers from a specified browser.
 - **Headless/NonHeadless** ⚙️ Compile the spoofer without a command line so it can be put in startup / ran without interference. This is controlled by the `#define HEADLESS` in `Master.cpp`.
-- **No System Instability** ⚠️ This spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
+- **No System Instability** ⚠️ The spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
 
 <details>
   <summary><h2>Installation 📦</h2></summary>
