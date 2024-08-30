@@ -6,11 +6,10 @@
 #include <Wbemidl.h>
 #include <comdef.h>
 #include <sddl.h>
-
+#include <vector>
+#include <iostream>
 #include <string>
 #include <fstream>
-#include <iostream>
-#include <vector>
 
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "wbemuuid.lib")
@@ -52,9 +51,11 @@ pNtDeleteKey NtDeleteKey = nullptr;
 pRtlInitUnicodeString RtlInitUnicodeStringPtr = nullptr;
 pNtClose NtClosePtr = nullptr;
 pNtSetInformationProcess NtSetInformationProcess = nullptr;
-pNtSetInformationProcess OriginalNtSetInformationProcess = nullptr;
 
-void InitializeNtFunctions() {
+BYTE OriginalBytesNtSetInformationProcess[16];
+BYTE* pOriginalCodeNtSetInformationProcess = nullptr;
+
+void iniNtFunctions() {
     HMODULE hNtDll = GetModuleHandleA("ntdll.dll");
     if (hNtDll) {
         NtOpenKey = (pNtOpenKey)GetProcAddress(hNtDll, "NtOpenKey");
@@ -77,31 +78,42 @@ NTSTATUS NTAPI HookedNtSetInformationProcess(
     PROCESS_INFORMATION_CLASS ProcessInformationClass,
     PVOID ProcessInformation,
     ULONG ProcessInformationLength) {
-
     if (ProcessInformationClass == ProcessDebugPort) {
         std::cout << "ProcessDebugPort hook triggered, hiding debug port" << std::endl;
         ProcessInformation = NULL;
         ProcessInformationLength = 0;
         return STATUS_SUCCESS;
     }
-
-    return OriginalNtSetInformationProcess(
+    memcpy(pOriginalCodeNtSetInformationProcess, OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
+    NTSTATUS result = ((pNtSetInformationProcess)pOriginalCodeNtSetInformationProcess)(
         ProcessHandle, ProcessInformationClass, ProcessInformation, ProcessInformationLength);
+    DWORD oldProtect;
+    VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), PAGE_EXECUTE_READWRITE, &oldProtect);
+    pOriginalCodeNtSetInformationProcess[0] = 0xE9;
+    *(DWORD*)(pOriginalCodeNtSetInformationProcess + 1) = (DWORD)((BYTE*)HookedNtSetInformationProcess - pOriginalCodeNtSetInformationProcess - 5);
+    VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), oldProtect, &oldProtect);
+    return result;
+}
+
+void Inline(BYTE* targetFunction, BYTE* hookFunction, BYTE* originalBytes, size_t byteCount) {
+    memcpy(originalBytes, targetFunction, byteCount);
+    DWORD offset = (DWORD)(hookFunction - targetFunction - 5);
+    DWORD oldProtect;
+    VirtualProtect(targetFunction, byteCount, PAGE_EXECUTE_READWRITE, &oldProtect);
+    targetFunction[0] = 0xE9;
+    *(DWORD*)(targetFunction + 1) = offset;
+    VirtualProtect(targetFunction, byteCount, oldProtect, &oldProtect);
 }
 
 void HookNtDll() {
-    InitializeNtFunctions();
-
+    iniNtFunctions();
     if (NtSetInformationProcess) {
-        OriginalNtSetInformationProcess = NtSetInformationProcess;
-        DWORD oldProtect;
-        VirtualProtect((LPVOID)NtSetInformationProcess, sizeof(void*), PAGE_EXECUTE_READWRITE, &oldProtect);
-        *(void**)&NtSetInformationProcess = HookedNtSetInformationProcess;
-        VirtualProtect((LPVOID)NtSetInformationProcess, sizeof(void*), oldProtect, &oldProtect);
+        pOriginalCodeNtSetInformationProcess = (BYTE*)NtSetInformationProcess;
+        Inline(pOriginalCodeNtSetInformationProcess, (BYTE*)HookedNtSetInformationProcess, OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
         std::cout << "Hooked NtSetInformationProcess" << std::endl;
     }
     else {
-        std::cerr << "Failed to retrieve NtSetProcessInformation" << std::endl;
+        std::cerr << "Failed to retrieve NtSetInformationProcess" << std::endl;
     }
 }
 
@@ -141,7 +153,7 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
         (LPVOID*)&pLoc);
 
     if (FAILED(hres) || !pLoc) {
-        std::cerr << "Failed to create iwbemlocator obj, error code = 0x" << std::hex << hres << std::endl;
+        std::cerr << "Failed to create IWbemLocator object, error code = 0x" << std::hex << hres << std::endl;
         CoUninitialize();
         return false;
     }
@@ -157,7 +169,7 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
         &pSvc);
 
     if (FAILED(hres) || !pSvc) {
-        std::cerr << "Could not connect to WMI namespace root\\CIMv2, error code = 0x" << std::hex << hres << std::endl;
+        std::cerr << "Could not connect to WMI namespace ROOT\\CIMV2, error code = 0x" << std::hex << hres << std::endl;
         if (pLoc) pLoc->Release();
         CoUninitialize();
         return false;
@@ -205,12 +217,13 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
         if (0 == uReturn) {
             break;
         }
-
         VARIANT vtProp;
+        VariantInit(&vtProp);
         hr = pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0);
         if (SUCCEEDED(hr)) {
             std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(12);
             VARIANT vtNewVal;
+            VariantInit(&vtNewVal);
             vtNewVal.vt = VT_BSTR;
             vtNewVal.bstrVal = _bstr_t(newValue.c_str());
             hr = pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0);
@@ -225,6 +238,7 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
         else {
             std::cerr << "Failed to get property value, error code = 0x" << std::hex << hr << std::endl;
         }
+        VariantClear(&vtProp);
         pclsObj->Release();
     }
     pSvc->Release();
@@ -312,7 +326,6 @@ void deleteRegistryKey(const std::wstring& sid, const std::wstring& subKeyName) 
 
     HKEY hKey;
     std::wstring keyPath = L"\\Registry\\User\\" + sid + L"\\System\\CurrentControlSet\\Control\\" + subKeyName;
-    // this needs fixing fyi
 
     UNICODE_STRING unicodeKey;
     RtlInitUnicodeStringPtr(&unicodeKey, keyPath.c_str());
@@ -367,7 +380,6 @@ bool spoofEDID(HKEY hKeyRoot) {
                                 deviceSubKeyPath + L"\\Control\\Device Parameters",
                                 deviceSubKeyPath + L"\\Monitor\\Device Parameters"
                             };
-
                             for (const auto& path : possiblePaths) {
                                 HKEY hEDIDKey;
                                 if (RegOpenKeyExW(hKeyRoot, (path + L"\\EDID").c_str(), 0, KEY_READ | KEY_WRITE, &hEDIDKey) == ERROR_SUCCESS) {
@@ -391,7 +403,7 @@ bool spoofEDID(HKEY hKeyRoot) {
 void spoofHyperion() {
     std::cout << "\033[38;2;128;0;128m" << "\n========== HYPERION SPOOFING ==========\n" << "\033[0m";
 
-    InitializeNtFunctions();
+    iniNtFunctions();
     HookNtDll();
     spoofReg(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control", L"SystemReg"); // SysReg
     FWWMIC("SELECT UUID FROM Win32_ComputerSystemProduct", "UUID"); // UUID

@@ -17,7 +17,6 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Dynamically linked SQL3.dll (No need to keep it as an external file now)
 - Removed SQL3.dll, no longer needed.
 
-
 <details>
   <summary><h2>V3.6 -> V4.0 📈</h2></summary>
 

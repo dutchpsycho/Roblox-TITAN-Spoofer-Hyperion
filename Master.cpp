@@ -111,15 +111,6 @@ std::string rands(size_t length) {
     return result;
 }
 
-void progress(const std::string& step) {
-    static const char* progressChars = "|/-\\";
-    for (int i = 0; i < 4; ++i) {
-        std::cout << "\r" << step << " " << progressChars[i] << std::flush;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    }
-    std::cout << "\r" << step << " done!" << std::endl;
-}
-
 int main() {
     srand(static_cast<unsigned int>(time(nullptr)));
     std::string windowTitle = rands(24);
