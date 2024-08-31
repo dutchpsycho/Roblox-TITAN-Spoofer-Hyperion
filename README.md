@@ -50,7 +50,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Removed restoration logic (Annoying to maintain, nobody uses it)
 </details>
 
-## Features 💍
+## Features 💎
 
 - 🎯 **Fully Targeted**: This spoofer targets Roblox in specific, Hyperions detection vectors.
 - 👤 **Roblox Ban API Evasion**: The spoofer essentially negates Roblox's attempts to detect your alt accounts system side.
