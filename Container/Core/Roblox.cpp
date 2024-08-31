@@ -10,6 +10,9 @@
 #include <string>
 #include <stack>
 #include <iostream>
+#include <regex>
+#include <fstream>
+#include <sstream>
 
 #ifndef NT_SUCCESS
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
@@ -42,93 +45,41 @@ std::string getSystemDrive() {
     return "C:";
 }
 
-void ClearRoblox() {
-    std::cout << "\033[38;2;0;0;255m" << "\n========== ROBLOX CLEARING PROCESS ==========\n" << "\033[0m";
+std::string NewSets(const std::string& xmlContent) {
+    std::string nXML = xmlContent;
+    std::regex referentRegex(R"(<Item class="UserGameSettings" referent="[^"]+">)");
+    nXML = std::regex_replace(nXML, referentRegex, R"(<Item class="UserGameSettings" referent="TITAN">)");
+    return nXML;
+}
 
-    if (ScopeWindow("Roblox") && (ScopeProcess("RobloxPlayerBeta.exe") || ScopeProcess("Roblox Client"))) {
-        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        if (hSnapshot == INVALID_HANDLE_VALUE) {
-            std::cerr << "Failed to create process snapshot." << std::endl;
-            return;
-        }
-
-        PROCESSENTRY32 pe32;
-        pe32.dwSize = sizeof(PROCESSENTRY32);
-
-        if (Process32First(hSnapshot, &pe32)) {
-            do {
-                char szExeFileA[MAX_PATH];
-                WideCharToMultiByte(CP_ACP, 0, pe32.szExeFile, -1, szExeFileA, MAX_PATH, NULL, NULL);
-
-                if (_stricmp(szExeFileA, "RobloxPlayerBeta.exe") == 0 || _stricmp(szExeFileA, "Roblox Client") == 0) {
-                    std::cout << "Freezing process: " << szExeFileA << std::endl;
-                    if (!Freeze(pe32.th32ProcessID)) {
-                        std::cerr << "Failed to freeze process: " << szExeFileA << std::endl;
-                    }
-                }
-            } while (Process32Next(hSnapshot, &pe32));
-        }
-        else {
-            std::cerr << "Failed to iterate through processes." << std::endl;
-        }
-        CloseHandle(hSnapshot);
-
-        Sleep(1000);
-
-        if (!Terminate("RobloxPlayerBeta.exe")) {
-            std::cerr << "Failed to terminate RobloxPlayerBeta.exe." << std::endl;
-        }
-
-        if (!Terminate("Roblox Client")) {
-            std::cerr << "Failed to terminate Roblox Client." << std::endl;
-        }
-        Sleep(500);
+bool CopySets(const fs::path& SetFPath) {
+    if (!fs::exists(SetFPath)) {
+        std::cerr << "GlobalXML file does not exist: " << SetFPath << std::endl;
+        return false;
     }
 
-    char localAppDataPath[MAX_PATH];
-    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, localAppDataPath))) {
-        fs::path robloxPath = fs::path(localAppDataPath) / "Roblox";
-        std::cout << "Removing Roblox directory: " << robloxPath << std::endl;
-        rmDir(robloxPath);
-    }
-    else {
-        std::cerr << "Failed to get Local AppData path." << std::endl;
+    std::ifstream configFile(SetFPath);
+    if (!configFile.is_open()) {
+        std::cerr << "Failed to open GlobalXML file: " << SetFPath << std::endl;
+        return false;
     }
 
-    std::string systemDrive = getSystemDrive();
-    fs::path crashHandlerPath = fs::path(systemDrive) / "Program Files (x86)" / "Roblox" / "Versions" / "version-3243b6d003cf4642" / "RobloxCrashHandler.exe";
-    std::cout << "Removing Crash Handler: " << crashHandlerPath << std::endl;
-    rmFile(crashHandlerPath);
-
-    char tempPath[MAX_PATH];
-    if (GetTempPathA(MAX_PATH, tempPath)) {
-        fs::path tempDir(tempPath);
-        fs::path robloxTempPath = tempDir / "Roblox";
-        if (fs::exists(robloxTempPath)) {
-            std::cout << "Clearing Roblox %TEMP%: " << robloxTempPath << std::endl;
-            for (const auto& entry : fs::directory_iterator(robloxTempPath)) {
-                if (entry.is_regular_file()) {
-                    fs::remove(entry.path());
-                }
-            }
-        }
-    }
-    else {
-        std::cerr << "Failed to get %TEMP% path." << std::endl;
+    std::stringstream buffer;
+    buffer << configFile.rdbuf();
+    std::string xmlContent = buffer.str();
+    configFile.close();
+    std::string nXML = NewSets(xmlContent);
+    fs::remove(SetFPath);
+    std::ofstream NewSetF(SetFPath);
+    if (!NewSetF.is_open()) {
+        std::cerr << "Failed to create modded GlobalXML file: " << SetFPath << std::endl;
+        return false;
     }
 
-    fs::path cTempPath = fs::path(systemDrive) / "Temp";
-    if (fs::exists(cTempPath)) {
-        fs::path robloxTempPath = cTempPath / "Roblox";
-        if (fs::exists(robloxTempPath)) {
-            std::cout << "Clearing: " << robloxTempPath << std::endl;
-            for (const auto& entry : fs::directory_iterator(robloxTempPath)) {
-                if (entry.is_regular_file()) {
-                    fs::remove(entry.path());
-                }
-            }
-        }
-    }
+    NewSetF << nXML;
+    NewSetF.close();
+
+    return true;
 }
 
 bool ScopeProcess(const std::string& processName) {
@@ -253,4 +204,137 @@ bool Terminate(const std::string& processName) {
     }
     CloseHandle(hProcessSnap);
     return true;
+}
+
+void ClearRoblox() {
+    std::cout << "\033[38;2;0;0;255m" << "\n========== ROBLOX CLEARING PROCESS ==========\n" << "\033[0m";
+
+    if (ScopeWindow("Roblox") && (ScopeProcess("RobloxPlayerBeta.exe") || ScopeProcess("Roblox Client"))) {
+        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnapshot == INVALID_HANDLE_VALUE) {
+            std::cerr << "Failed to create process snapshot." << std::endl;
+            return;
+        }
+
+        PROCESSENTRY32 pe32;
+        pe32.dwSize = sizeof(PROCESSENTRY32);
+
+        if (Process32First(hSnapshot, &pe32)) {
+            do {
+                char szExeFileA[MAX_PATH];
+                WideCharToMultiByte(CP_ACP, 0, pe32.szExeFile, -1, szExeFileA, MAX_PATH, NULL, NULL);
+
+                if (_stricmp(szExeFileA, "RobloxPlayerBeta.exe") == 0 || _stricmp(szExeFileA, "Roblox Client") == 0) {
+                    std::cout << "Freezing process: " << szExeFileA << std::endl;
+                    if (!Freeze(pe32.th32ProcessID)) {
+                        std::cerr << "Failed to freeze process: " << szExeFileA << std::endl;
+                    }
+                }
+            } while (Process32Next(hSnapshot, &pe32));
+        }
+        else {
+            std::cerr << "Failed to iterate through processes." << std::endl;
+        }
+        CloseHandle(hSnapshot);
+
+        Sleep(1000);
+
+        if (!Terminate("RobloxPlayerBeta.exe")) {
+            std::cerr << "Failed to terminate RobloxPlayerBeta.exe." << std::endl;
+        }
+
+        if (!Terminate("Roblox Client")) {
+            std::cerr << "Failed to terminate Roblox Client." << std::endl;
+        }
+        Sleep(500);
+    }
+
+    char LocalAppDataP[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, LocalAppDataP))) {
+        fs::path rbxP = fs::path(LocalAppDataP) / "Roblox";
+        fs::path setFPath = rbxP / "GlobalBasicSettings_13.xml";
+
+        std::string originalXMLContent;
+        std::string mXML;
+
+        if (fs::exists(setFPath)) {
+            std::ifstream configFile(setFPath);
+            if (configFile.is_open()) {
+                std::stringstream buffer;
+                buffer << configFile.rdbuf();
+                originalXMLContent = buffer.str();
+                configFile.close();
+
+                mXML = NewSets(originalXMLContent);
+            }
+            else {
+                std::cerr << "Failed to open Roblox's XML file: " << setFPath << std::endl;
+            }
+        }
+        else {
+            std::cerr << "Global XML not found, skipping rollover." << std::endl;
+        }
+
+        if (fs::exists(rbxP)) {
+            std::cout << "Removing Roblox dir: " << rbxP << std::endl;
+            rmDir(rbxP);
+
+            if (!fs::exists(rbxP)) {
+                fs::create_directories(rbxP);
+            }
+
+            if (!mXML.empty()) {
+                std::ofstream newSetF(setFPath);
+                if (newSetF.is_open()) {
+                    newSetF << mXML;
+                    newSetF.close();
+                    std::cout << "Recreated the cleaned config file: " << setFPath << std::endl;
+                }
+                else {
+                    std::cerr << "Failed to recreate the config file: " << setFPath << std::endl;
+                }
+            }
+        }
+        else {
+            std::cerr << "Roblox dir not found, skipping." << std::endl;
+        }
+    }
+    else {
+        std::cerr << "Failed to get Local AppData path." << std::endl;
+    }
+
+    std::string systemDrive = getSystemDrive();
+    fs::path crashHandlerPath = fs::path(systemDrive) / "Program Files (x86)" / "Roblox" / "Versions" / "version-3243b6d003cf4642" / "RobloxCrashHandler.exe";
+    std::cout << "Removing Crash Handler: " << crashHandlerPath << std::endl;
+    rmFile(crashHandlerPath);
+
+    char tempPath[MAX_PATH];
+    if (GetTempPathA(MAX_PATH, tempPath)) {
+        fs::path tempDir(tempPath);
+        fs::path robloxTempPath = tempDir / "Roblox";
+        if (fs::exists(robloxTempPath)) {
+            std::cout << "Clearing Roblox %TEMP%: " << robloxTempPath << std::endl;
+            for (const auto& entry : fs::directory_iterator(robloxTempPath)) {
+                if (entry.is_regular_file()) {
+                    fs::remove(entry.path());
+                }
+            }
+        }
+    }
+    else {
+        std::cerr << "Failed to get %TEMP% path." << std::endl;
+    }
+
+    fs::path cTempPath = fs::path(systemDrive) / "Temp";
+    if (fs::exists(cTempPath)) {
+        fs::path robloxTempPath = cTempPath / "Roblox";
+        if (fs::exists(robloxTempPath)) {
+            std::cout << "Clearing: " << robloxTempPath << std::endl;
+            for (const auto& entry : fs::directory_iterator(robloxTempPath)) {
+                if (entry.is_regular_file()) {
+                    fs::remove(entry.path());
+                }
+            }
+        }
+    }
 }

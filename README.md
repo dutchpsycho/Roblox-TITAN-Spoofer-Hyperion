@@ -11,26 +11,32 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 [![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-blue)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 [![Discord](https://img.shields.io/badge/TITAN%201.5K%20Server%20Limit-7289DA?logo=discord&logoColor=white&label)](https://discord.gg/yUWyvT9JyP)
 
-# V4.0 -> V4.2 📈
+# V4.2 -> V4.5 📈
 
+- Resolved issue where your Roblox mouse sense, volume & graphic settings would be changed after spoofing (Due to removal of GlobalXML) I've created a function to re-generate this post spoofing.
+- Replaced NT Hook with Inlined
+- Added more fallbacks
+- Quality of Life
+
+<details>
+  <summary><h2>V4.0 -> V4.2 📈</h2></summary>
 - Fixed errors where you'd have to install vcruntime or msvc dll's (C++ comp tools)
 - Dynamically linked SQL3.dll (No need to keep it as an external file now)
 - Removed SQL3.dll, no longer needed.
+</details>
 
 <details>
   <summary><h2>V3.6 -> V4.0 📈</h2></summary>
-
 - Confirmed spoofer works as of banwave on 2024-08-23(23rd Aug, 2024)
 - Completely resolved all MAC spoofing issues & bugs
 - Changed to use Windows Instrumentals for MAC spoofing
 - Changed the way the CLI handles logs
 - Refactored Project Layout & Solution
 - Removed useless functionality (SigFucker Mem)
-
 </details>
+
 <details>
   <summary><h2>V3.1 -> V3.6 📈</h2></summary>
-
 - Added Headless version (No UI, just run to spoof, can be put in startup)
 - Added targeted Browser Cookie Cleaning (Option on UI version, not included in Headless)
 - Added backup for this in case `SQL3.dll` fails or dynamic linking fails `(Python/CookieCacheCleaner.py)`
@@ -42,20 +48,20 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - Removed useless registry spoofs
 - Fixed rare buffer overflow 
 - Removed restoration logic (Annoying to maintain, nobody uses it)
-
 </details>
 
 ## Features 💍
 
-- **System Spoofing** 🖥️ Spoofs keys and cleans files that Roblox and Hyperion use to detect alt accounts.
-- **Roblox Cookie Cache Cleaner** 🍪 Cleans Roblox.com cookies & trackers from a specified browser.
-- **Headless/NonHeadless** ⚙️ Compile the spoofer without a command line so it can be put in startup / ran without interference. This is controlled by the `#define HEADLESS` in `Master.cpp`.
-- **No System Instability** ⚠️ This spoofer doesn't spoof anything that'll break anything on your PC. It operates in UserMode, not the Kernel.
+- 🎯 **Fully Targeted**: This spoofer targets Roblox in specific, Hyperions detection vectors.
+- 👤 **Roblox Ban API Evasion**: The spoofer essentially negates Roblox's attempts to detect your alt accounts system side.
+- 🔐 **Hyperion Unban**: If you're banned by Hyperion (HWID banned) the spoofer completely removes that.
+- ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
+- 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
 
 <details>
-  <summary><h2>Installation 📦</h2></summary>
+  <summary><h2>Installation & Setup 📦</h2></summary>
 
-If you prefer not to compile the code yourself, you can download the exe's from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
+If you prefer not to compile the code yourself, you can download the exe's (Binaries) from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
 
 1. **Clone the repository:**
 

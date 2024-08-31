@@ -27,7 +27,8 @@
 // Second, click Linker dropdown & click advanced. change entry point to "MainCRTStartup"
 // Third, click system and click the dropdown and switch it to "SUBSYSTEM::WINDOWS"
 // Finally, uncomment the line below (Remove //)
-// #define HEADLESS
+
+#define HEADLESS
 
 #ifdef HEADLESS
 
@@ -70,7 +71,7 @@ void TITAN() {
     std::cout << art << std::endl;
     std::cout << "https://github.com/dutchpsycho/TITAN-Spoofer" << std::endl;
     std::cout << "Hyperion: 'New phone, who dis?'" << std::endl;
-    std::cout << "TITAN Spoofer V4" << std::endl;
+    std::cout << "TITAN Spoofer V4.5" << std::endl;
 }
 
 void Menu(int selected) {
@@ -86,8 +87,7 @@ void Menu(int selected) {
             if (i == 1) {
                 std::cout << subtext << std::endl;
             }
-        }
-        else {
+        } else {
             std::cout << "  " << options[i] << std::endl;
         }
     }
@@ -138,8 +138,7 @@ int main() {
             default:
                 break;
             }
-        }
-        else if (key == 13) { // enter
+        } else if (key == 13) { // enter
             switch (choice) {
             case 0:
                 ClearRoblox();

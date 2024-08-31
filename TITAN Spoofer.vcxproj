@@ -84,6 +84,7 @@
     <OutDir>$(SolutionDir)$(Platform)\</OutDir>
     <IntDir>$(ShortProjectName)\$(Platform)\</IntDir>
     <TargetName>TITAN Spoofer</TargetName>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
