@@ -13,7 +13,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 
 ## Features 💎
 
-- 🎯 **Fully Targeted**: This spoofer targets Roblox in specific, Hyperions detection vectors.
+- 🎯 **Fully Targeted**: This spoofer targets Roblox & It's AntiCheat in specific.
 - 👤 **Roblox Ban API Evasion**: The spoofer essentially negates Roblox's attempts to detect your alt accounts system side.
 - 🔐 **Hyperion Unban**: If you're banned by Hyperion (HWID banned) the spoofer completely removes that.
 - ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
