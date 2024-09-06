@@ -5,27 +5,25 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="HEADLESS TITAN Spoofer|x64">
+      <Configuration>HEADLESS TITAN Spoofer</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Container\Core\CacheClear.cpp" />
-    <ClCompile Include="Container\Core\Hyperion.cpp" />
-    <ClCompile Include="Container\Core\MAC.cpp" />
-    <ClCompile Include="Container\Core\Roblox.cpp" />
-    <ClCompile Include="Container\Util\Job.cpp" />
-    <ClCompile Include="Container\Util\SigFuck.cpp" />
-    <ClCompile Include="Master.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Container\Header\CacheClear.hpp" />
-    <ClInclude Include="Container\Header\Hyperion.hpp" />
-    <ClInclude Include="Container\Header\Job.hpp" />
-    <ClInclude Include="Container\Header\MAC.hpp" />
-    <ClInclude Include="Container\Header\Roblox.hpp" />
-    <ClInclude Include="Container\Header\SigFuck.hpp" />
+    <ClInclude Include="Container\Header\CacheClear.hxx" />
+    <ClInclude Include="Container\Header\Fingerprint.hxx" />
+    <ClInclude Include="Container\Header\Hyperion.hxx" />
+    <ClInclude Include="Container\Header\MAC.hxx" />
+    <ClInclude Include="Container\Header\Resource.h" />
+    <ClInclude Include="Container\Header\Roblox.hxx" />
+    <ClInclude Include="Container\Util\Elevate.hxx" />
+    <ClInclude Include="Container\Util\StringEncryption.hxx" />
+    <ClInclude Include="Container\Util\Utils.hxx" />
     <ClInclude Include="Include\sqlite3.h" />
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +34,15 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TITAN.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Container\Core\CacheClear.cxx" />
+    <ClCompile Include="Container\Core\Fingerprint.cxx" />
+    <ClCompile Include="Container\Core\Hyperion.cxx" />
+    <ClCompile Include="Container\Core\MAC.cxx" />
+    <ClCompile Include="Container\Core\Roblox.cxx" />
+    <ClCompile Include="Container\Core\Utils.cxx" />
+    <ClCompile Include="Master.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -57,6 +64,9 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='HEADLESS TITAN Spoofer|x64'">
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

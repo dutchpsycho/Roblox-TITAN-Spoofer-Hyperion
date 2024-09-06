@@ -1,7 +1,34 @@
-#include "../Header/Job.hpp"
+#include "../Util/Utils.hxx"
 
+#include <windows.h>
+#include <tlhelp32.h>
+#include <psapi.h>
+
+#include <string>
+#include <vector>
+#include <algorithm>
 #include <ctime>
+#include <cstdlib>
+#include <fstream>
+#include <iterator>
 #include <iostream>
+
+bool IsAdministrator(HANDLE proc)
+{
+    bool IsAdmin = false;
+    HANDLE hToken = NULL;
+    if (OpenProcessToken(proc, TOKEN_QUERY, &hToken)) 
+    {
+        TOKEN_ELEVATION TE;
+        DWORD rSize = 0;
+        if (GetTokenInformation(hToken, TokenElevation, &TE, sizeof(TOKEN_ELEVATION), &rSize))
+            IsAdmin = TE.TokenIsElevated;
+
+        CloseHandle(hToken);
+    }
+
+    return IsAdmin; /* No-throw, assume default permissions */
+}
 
 std::string randstring(size_t length) {
     const char* chars = "0123456789ABCDEF";
@@ -10,6 +37,19 @@ std::string randstring(size_t length) {
         result += chars[rand() % 16];
     }
     return result;
+}
+
+void WindowName() {
+    HWND hwnd = GetConsoleWindow();
+    if (hwnd != NULL) {
+        std::string randomName = std::to_string(rand());
+        SetWindowTextA(hwnd, randomName.c_str());
+    }
+}
+
+void SigFucker() {
+    srand(static_cast<unsigned int>(time(0)));
+    WindowName();
 }
 
 bool readReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName, std::wstring& value) {

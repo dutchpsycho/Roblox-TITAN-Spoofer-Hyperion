@@ -1,5 +1,6 @@
-#include "../Header/Job.hpp"
-#include "../Header/Hyperion.hpp"
+#include "../Header/Hyperion.hxx"
+
+#include "../Util/Utils.hxx"
 
 #include <windows.h>
 #include <winternl.h>
@@ -231,7 +232,7 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
                 std::cerr << "Failed to set property value, error code = 0x" << std::hex << hr << std::endl;
             }
             else {
-                std::cout << "Spoofed -> " << propertyName << " New Value :: [ " << newValue << " ]" << std::endl;
+                std::cout << "Spoofed -> " << propertyName << " :: [ " << newValue << " ]" << std::endl;
             }
             VariantClear(&vtNewVal);
         }
@@ -251,7 +252,7 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
 bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName) {
     HKEY hKey;
     if (RegOpenKeyExW(hKeyRoot, subKey.c_str(), 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
-        std::cerr << "Failed to open reg key: " << wstringToString(subKey) << std::endl;
+        std::cerr << "Failed to open Registry key: " << wstringToString(subKey) << std::endl;
         return false;
     }
 
@@ -263,7 +264,7 @@ bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& val
 
     std::wstring originalValue(dataSize / sizeof(wchar_t), L'\0');
     if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, reinterpret_cast<LPBYTE>(&originalValue[0]), &dataSize) != ERROR_SUCCESS) {
-        std::cerr << "Failed to read reg value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
+        std::cerr << "Failed to read Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
@@ -272,12 +273,12 @@ bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& val
     std::wstring newValue = stringToWstring(randomString);
 
     if (RegSetValueExW(hKey, valueName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>(newValue.c_str()), static_cast<DWORD>((newValue.size() + 1) * sizeof(wchar_t))) != ERROR_SUCCESS) {
-        std::cerr << "Failed to set reg value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
+        std::cerr << "Failed to set Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
 
-    std::cout << "Spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << " New Value :: [ " << randomString << " ]" << std::endl;
+    std::cout << "Spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << " :: [ " << randomString << " ]" << std::endl;
     RegCloseKey(hKey);
     return true;
 }
@@ -285,20 +286,20 @@ bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& val
 bool spoofRegBinary(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName) {
     HKEY hKey;
     if (RegOpenKeyExW(hKeyRoot, subKey.c_str(), 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
-        std::cerr << "Failed to open reg key: " << wstringToString(subKey) << std::endl;
+        std::cerr << "Failed to open Registry key: " << wstringToString(subKey) << std::endl;
         return false;
     }
 
     DWORD dataSize = 0;
     if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, NULL, reinterpret_cast<DWORD*>(&dataSize)) != ERROR_SUCCESS || dataSize == 0) {
-        std::cerr << "Failed to query reg value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
+        std::cerr << "Failed to query Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
 
     std::vector<BYTE> data(dataSize);
     if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, data.data(), &dataSize) != ERROR_SUCCESS) {
-        std::cerr << "Failed to read reg value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
+        std::cerr << "Failed to read Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
@@ -308,12 +309,12 @@ bool spoofRegBinary(HKEY hKeyRoot, const std::wstring& subKey, const std::wstrin
     }
 
     if (RegSetValueExW(hKey, valueName.c_str(), 0, REG_BINARY, data.data(), dataSize) != ERROR_SUCCESS) {
-        std::cerr << "Failed to set reg value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
+        std::cerr << "Failed to set Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
 
-    std::cout << "Spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << " New Value :: [Binary Data]" << std::endl;
+    std::cout << "Spoofed -> " << wstringToString(subKey) << "\\" << wstringToString(valueName) << " :: [Binary Data]" << std::endl;
     RegCloseKey(hKey);
     return true;
 }
@@ -338,7 +339,7 @@ void deleteRegistryKey(const std::wstring& sid, const std::wstring& subKeyName) 
     if (status == STATUS_SUCCESS) {
         status = NtDeleteKey(hKey);
         if (status == STATUS_SUCCESS) {
-            std::wcout << L"Removed reg: " << keyPath << std::endl;
+            std::wcout << L"Removed Registry Key -> " << keyPath << std::endl;
         }
         NtClosePtr(hKey);
     }
@@ -384,7 +385,7 @@ bool spoofEDID(HKEY hKeyRoot) {
                                 HKEY hEDIDKey;
                                 if (RegOpenKeyExW(hKeyRoot, (path + L"\\EDID").c_str(), 0, KEY_READ | KEY_WRITE, &hEDIDKey) == ERROR_SUCCESS) {
                                     if (spoofRegBinary(hEDIDKey, L"EDID", L"EDID")) {
-                                        std::cout << "Spoofed EDID for: " << wstringToString(path) << std::endl;
+                                        std::cout << "Spoofed -> EDID :: " << wstringToString(path) << std::endl;
                                     }
                                     RegCloseKey(hEDIDKey);
                                 }

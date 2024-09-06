@@ -1,7 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 
-#include "../Header/MAC.hpp"
-#include "../Header/Job.hpp"
+#include "../Header/MAC.hxx"
+#include "../Util/Utils.hxx"
 
 #include <windows.h>
 #include <winsock2.h>

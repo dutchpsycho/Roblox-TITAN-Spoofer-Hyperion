@@ -2,9 +2,9 @@
 
 TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 
-![TITAN Spoofer](./Images/moon.png)
-![TITAN Spoofer](./Images/SubRoutine.png)
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
+![TITAN Spoofer](./Images/STRIKE.png)
+![TITAN Spoofer](./Images/V5.png)
 
 **[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection mechanisms and Roblox's ban API.
 
@@ -13,18 +13,29 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 
 ## Features 💎
 
-- 🎯 **Fully Targeted**: This spoofer targets Roblox in specific, Hyperions detection vectors.
+- 🎯 **Fully Targeted**: This spoofer targets Roblox & It's AntiCheat in specific.
 - 👤 **Roblox Ban API Evasion**: The spoofer essentially negates Roblox's attempts to detect your alt accounts system side.
 - 🔐 **Hyperion Unban**: If you're banned by Hyperion (HWID banned) the spoofer completely removes that.
 - ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
 - 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
 
-# V4.2 -> V4.5 📈
+## V4.5 > V5 📈
+
+- Added fingerprint spoofing, same method Synapse X used
+- Added CPUID, PC HWID, PDS, SID, HDD, CPU... spoofing
+- Added string encryption
+- Added self-elevation technique
+- Re-Organized project
+
+<details>
+  <summary><h3>V4.2 -> V4.5 📈</h3></summary>
 
 - Resolved issue where your Roblox mouse sense, volume & graphic settings would be changed after spoofing (Due to removal of GlobalXML) I've created a function to re-generate this post spoofing.
 - Replaced NT Hook with Inlined
 - Added more fallbacks
 - Quality of Life
+
+</details>
 
 <details>
   <summary><h3>V4.0 -> V4.2 📈</h3></summary>

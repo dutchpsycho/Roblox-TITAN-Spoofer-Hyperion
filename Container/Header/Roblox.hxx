@@ -1,5 +1,5 @@
-#ifndef ROBLOX_HPP
-#define ROBLOX_HPP
+#ifndef ROBLOX_HXX
+#define ROBLOX_HXX
 
 #include <windows.h>
 #include <string>

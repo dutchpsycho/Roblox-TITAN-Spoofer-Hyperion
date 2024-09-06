@@ -1,5 +1,6 @@
-#include "../Header/Roblox.hpp"
-#include "../Header/Job.hpp"
+#include "../Header/Roblox.hxx"
+
+#include "../Util/Utils.hxx"
 
 #include <windows.h>
 #include <winternl.h>

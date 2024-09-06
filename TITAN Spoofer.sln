@@ -7,20 +7,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TITAN Spoofer", "TITAN Spoo
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+		HEADLESS TITAN Spoofer|x64 = HEADLESS TITAN Spoofer|x64
+		HEADLESS TITAN Spoofer|x86 = HEADLESS TITAN Spoofer|x86
+		TITAN Spoofer|x64 = TITAN Spoofer|x64
+		TITAN Spoofer|x86 = TITAN Spoofer|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Debug|x64.ActiveCfg = Release|x64
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Debug|x64.Build.0 = Release|x64
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Debug|x86.ActiveCfg = Debug|Win32
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Debug|x86.Build.0 = Debug|Win32
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Release|x64.ActiveCfg = Release|x64
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Release|x64.Build.0 = Release|x64
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Release|x86.ActiveCfg = Release|Win32
-		{A91C3386-1255-4E8B-8663-602E57F5F861}.Release|x86.Build.0 = Release|Win32
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.HEADLESS TITAN Spoofer|x64.ActiveCfg = HEADLESS TITAN Spoofer|x64
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.HEADLESS TITAN Spoofer|x64.Build.0 = HEADLESS TITAN Spoofer|x64
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.HEADLESS TITAN Spoofer|x86.ActiveCfg = HEADLESS TITAN Spoofer|x64
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.HEADLESS TITAN Spoofer|x86.Build.0 = HEADLESS TITAN Spoofer|x64
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.TITAN Spoofer|x64.ActiveCfg = Release|x64
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.TITAN Spoofer|x64.Build.0 = Release|x64
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.TITAN Spoofer|x86.ActiveCfg = Release|Win32
+		{A91C3386-1255-4E8B-8663-602E57F5F861}.TITAN Spoofer|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

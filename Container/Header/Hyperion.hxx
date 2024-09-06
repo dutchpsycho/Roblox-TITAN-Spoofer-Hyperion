@@ -1,5 +1,5 @@
-#ifndef HYPERION_HPP
-#define HYPERION_HPP
+#ifndef HYPERION_HXX
+#define HYPERION_HXX
 
 #include <windows.h>
 #include <string>

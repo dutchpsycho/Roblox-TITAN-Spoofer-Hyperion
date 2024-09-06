@@ -1,4 +1,4 @@
-#include "../Header/CacheClear.hpp"
+#include "../Header/CacheClear.hxx"
 #include "../Header/Resource.h"
 
 #include <windows.h>

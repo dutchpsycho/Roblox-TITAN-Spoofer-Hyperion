@@ -1,5 +1,5 @@
-#ifndef MAC_HPP
-#define MAC_HPP
+#ifndef MAC_HXX
+#define MAC_HXX
 
 #include <string>
 #include <vector>

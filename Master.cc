@@ -2,15 +2,17 @@
 * @Author Damon (Swedish.Psych0)
 * @License TITAN © 2024 by Damon under CC BY-NC-ND 4.0
 * @Namespace TITAN
-* @Version 4.0.0
+* @Version 5.0.0
 */
 
-#include "./Container/Header/Job.hpp"
-#include "./Container/Header/Hyperion.hpp"
-#include "./Container/Header/Roblox.hpp"
-#include "./Container/Header/MAC.hpp"
-#include "./Container/Header/CacheClear.hpp"
-#include "./Container/Header/SigFuck.hpp"
+#include "./Container/Header/Hyperion.hxx"
+#include "./Container/Header/Fingerprint.hxx"
+#include "./Container/Header/Roblox.hxx"
+#include "./Container/Header/MAC.hxx"
+#include "./Container/Header/CacheClear.hxx"
+
+#include "./Container/Util/Elevate.hxx"
+#include "./Container/Util/Utils.hxx"
 
 #include <iostream>
 #include <fstream>
@@ -28,16 +30,18 @@
 // Third, click system and click the dropdown and switch it to "SUBSYSTEM::WINDOWS"
 // Finally, uncomment the line below (Remove //)
 
-#define HEADLESS
+// #define HEADLESS
 
 #ifdef HEADLESS
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     srand(static_cast<unsigned int>(time(nullptr)));
+    Elevate();
     SigFucker();
     ClearRoblox();
     spoofMac();
     spoofHyperion();
+    fingerprint = SystemFingerprint::CreateUniqueFingerprint();
     return 0;
 }
 
@@ -50,28 +54,30 @@ void Colour(int color) {
 
 void TITAN() {
     std::string art = R"(
-      /###           /       #####  # /###           /    ##            ##### #     ##    
-     /  ############/     ######  /  /  ############/  /####         ######  /#    #### / 
-    /     #########      /#   /  /  /     #########   /  ###        /#   /  / ##    ###/  
-    #     /  #          /    /  /   #     /  #           /##       /    /  /  ##    # #   
-     ##  /  ##              /  /     ##  /  ##          /  ##          /  /    ##   #     
-        /  ###             ## ##        /  ###          /  ##         ## ##    ##   #     
-       ##   ##             ## ##       ##   ##         /    ##        ## ##     ##  #     
-       ##   ##           /### ##       ##   ##         /    ##        ## ##     ##  #     
-       ##   ##          / ### ##       ##   ##        /      ##       ## ##      ## #     
-       ##   ##             ## ##       ##   ##        /########       ## ##      ## #     
-        ##  ##        ##   ## ##        ##  ##       /        ##      #  ##       ###     
-         ## #      / ###   #  /          ## #      / #        ##         /        ###     
-          ###     /   ###    /            ###     / /####      ##    /##/          ##     
-           ######/     #####/              ######/ /   ####    ## / /  #####              
-             ###         ###                 ###  /     ##      #/ /     ##               
-                                                  #                #                      
-                                                   ##               ##                    
+                              dMb,
+                            ,dMMMMb,          ,,
+                         ,dMMMMMMMMMb, eeee8888"
+                      ,mMMm!!!!XXXXMMMMM"""
+                    ,d!!XXMMXX88888888W"
+                   `MX88dMM8888WWWMMMMMMb,
+                       '""MMMMMMMMMMMMMMMMb
+                         MMMMMMMMMMMMMMMMMMb,
+                        dMMMMMMMMMMMMMMMMMMMMb,,
+            _,dMMMMMMMMMMXXXX!!!!!!!!!!!!!!XXXXXMP
+       _,dMMXX!!!!!!!!!!!!!!!!!!XXXXX888888888WWC
+   _,dMMX!!!MMMM!!!!!!!!XXXXXX888888888888WWMMMMMb,
+  dMMX!!!!!MMM!XXXXXX88888888888888888WWMMMMMMMMMMMb
+ dMMXXXXXX8MMMM88888888888888888WWWMMMMMMMMMMMMMMMMMb    ,d8
+ MMMMWW888888MMMMM8888888WWMMMMMMMMMMMMMMMMMMMMMMMMMMM,d88P'
+  YMMMMMWW888888WWMMMMMMMMMMP"""'    `"YMMMMMMMMMMMXMMMMMP
+     `""YMMMMMMMMMMMMMP""'            mMMMm!XXXXX8888888e,
+                                    ,d!!XXMM888888888888WW
+Swedish.Psycho                     "MX88dMM888888WWWMMMMMMb
+TITAN Spoofer V5.0                        """```"YMMMMMMMYMMM
+Hyperion: 'New phone, who dis?                    `"YMMMMM
+https://github.com/dutchpsycho/TITAN-Spoofer         `"YMP
     )";
     std::cout << art << std::endl;
-    std::cout << "https://github.com/dutchpsycho/TITAN-Spoofer" << std::endl;
-    std::cout << "Hyperion: 'New phone, who dis?'" << std::endl;
-    std::cout << "TITAN Spoofer V4.5" << std::endl;
 }
 
 void Menu(int selected) {
@@ -118,13 +124,13 @@ int main() {
 
     SigFucker();
     TITAN();
+    Elevate();
 
     int choice = 0;
     while (true) {
         system("CLS");
         TITAN();
         Menu(choice);
-
         int key = _getch();
         if (key == 224) {
             key = _getch();
@@ -138,16 +144,20 @@ int main() {
             default:
                 break;
             }
-        } else if (key == 13) { // enter
+        }
+        else if (key == 13) { // enter
+            std::unique_ptr<SystemFingerprint> fingerprint;
             switch (choice) {
-            case 0:
+            case 0: {
                 ClearRoblox();
                 spoofMac();
                 spoofHyperion();
-
+                fingerprint = SystemFingerprint::CreateUniqueFingerprint();
+                std::cout << "Spoofed Fingerprint Successfully :: [ " << fingerprint->ToString() << " ]\n" << std::endl;
                 _ps("Operation Finished Successfully, no restart required.", 10);
                 system("pause");
                 break;
+            }
             case 1:
                 ClearRoblox();
                 CacheClear();

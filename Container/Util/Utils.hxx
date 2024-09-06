@@ -1,5 +1,5 @@
-#ifndef JOB_HPP
-#define JOB_HPP
+#ifndef JOB_HXX
+#define JOB_HXX
 
 #include <windows.h>
 #include <string>
@@ -8,6 +8,9 @@
 namespace fs = std::filesystem;
 
 std::string randstring(size_t length);
+
+void WindowName();
+void SigFucker();
 
 bool readReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName, std::wstring& value);
 bool writeReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName, const std::wstring& value);
