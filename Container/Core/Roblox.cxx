@@ -98,10 +98,10 @@ bool ScopeProcess(const std::string& processName) {
 
     if (Process32First(hProcessSnap, &pe32)) {
         do {
-            char szExeFileA[MAX_PATH];
-            WideCharToMultiByte(CP_ACP, 0, pe32.szExeFile, -1, szExeFileA, MAX_PATH, NULL, NULL);
+            char exeFileA[MAX_PATH];
+            WideCharToMultiByte(CP_ACP, 0, pe32.szExeFile, -1, exeFileA, MAX_PATH, NULL, NULL);
 
-            if (_stricmp(szExeFileA, processName.c_str()) == 0) {
+            if (_stricmp(exeFileA, processName.c_str()) == 0) {
                 processFound = true;
                 break;
             }

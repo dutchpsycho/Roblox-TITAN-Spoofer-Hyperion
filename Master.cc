@@ -36,6 +36,7 @@
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     srand(static_cast<unsigned int>(time(nullptr)));
+    std::unique_ptr<SystemFingerprint> fingerprint;
     Elevate();
     SigFucker();
     ClearRoblox();

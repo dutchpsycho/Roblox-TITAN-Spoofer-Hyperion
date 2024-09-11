@@ -47,9 +47,6 @@
     <None Include="SQL3.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TITAN.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Master.cc" />
     <ClCompile Include="Container\Core\CacheClear.cxx">
       <Filter>Source</Filter>
@@ -69,5 +66,8 @@
     <ClCompile Include="Container\Core\Utils.cxx">
       <Filter>Source</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TITAN.rc" />
   </ItemGroup>
 </Project>

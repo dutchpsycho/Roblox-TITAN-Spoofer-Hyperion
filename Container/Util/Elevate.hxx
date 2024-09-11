@@ -48,11 +48,10 @@ void Elevate() {
             }
         }
 
-        HANDLE hToken;
-        TOKEN_PRIVILEGES tp;
-        LUID luid;
-
         if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+            TOKEN_PRIVILEGES tp;
+            LUID luid;
+
             if (LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luid)) {
                 tp.PrivilegeCount = 1;
                 tp.Privileges[0].Luid = luid;
