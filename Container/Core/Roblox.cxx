@@ -48,20 +48,19 @@ std::string getSystemDrive() {
 
 std::string NewSets(const std::string& xmlContent) {
     std::string nXML = xmlContent;
-    std::regex referentRegex(R"(<Item class="UserGameSettings" referent="[^"]+">)");
-    nXML = std::regex_replace(nXML, referentRegex, R"(<Item class="UserGameSettings" referent="TITAN">)");
+    std::regex referRegex(R"(<Item class="UserGameSettings" referent="[^"]+">)");
+    nXML = std::regex_replace(nXML, referRegex, R"(<Item class="UserGameSettings" referent="TITAN">)");
     return nXML;
 }
 
 bool CopySets(const fs::path& SetFPath) {
     if (!fs::exists(SetFPath)) {
-        std::cerr << "GlobalXML file does not exist: " << SetFPath << std::endl;
         return false;
     }
 
     std::ifstream configFile(SetFPath);
+
     if (!configFile.is_open()) {
-        std::cerr << "Failed to open GlobalXML file: " << SetFPath << std::endl;
         return false;
     }
 
@@ -72,8 +71,8 @@ bool CopySets(const fs::path& SetFPath) {
     std::string nXML = NewSets(xmlContent);
     fs::remove(SetFPath);
     std::ofstream NewSetF(SetFPath);
+    
     if (!NewSetF.is_open()) {
-        std::cerr << "Failed to create modded GlobalXML file: " << SetFPath << std::endl;
         return false;
     }
 

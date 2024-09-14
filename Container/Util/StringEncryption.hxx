@@ -4,10 +4,12 @@
 #include <array>
 #include <cstring>
 #include <iomanip>
-#include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
-#include <memory>
+#include <vector>
+#include <algorithm>
+#include <stdexcept>
 
 class IHashAlgorithm {
 public:
@@ -28,48 +30,46 @@ public:
     }
 
     void update(const unsigned char* message, size_t len) override {
-        size_t block_nb, new_len, rem_len, tmp_len;
-        const unsigned char* shifted_message;
+        size_t rem_len = BLOCK_SIZE - m_len;
 
-        tmp_len = BLOCK_SIZE - m_len;
-        rem_len = len < tmp_len ? len : tmp_len;
+        if (len >= rem_len) {
+            std::memcpy(&m_block[m_len], message, rem_len);
+            transform(m_block.data());
+            size_t new_len = len - rem_len;
+            size_t block_nb = new_len / BLOCK_SIZE;
 
-        std::memcpy(&m_block[m_len], message, rem_len);
+            for (size_t i = 0; i < block_nb; ++i) {
+                transform(message + rem_len + i * BLOCK_SIZE);
+            }
 
-        if (m_len + len < BLOCK_SIZE) {
+            m_len = new_len % BLOCK_SIZE;
+            std::memcpy(m_block.data(), message + len - m_len, m_len);
+            m_tot_len += (block_nb + 1) * BLOCK_SIZE;
+        } else {
+            std::memcpy(&m_block[m_len], message, len);
             m_len += len;
-            return;
         }
-
-        new_len = len - rem_len;
-        block_nb = new_len / BLOCK_SIZE;
-        shifted_message = message + rem_len;
-
-        transform(m_block.data(), 1);
-        transform(shifted_message, block_nb);
-
-        rem_len = new_len % BLOCK_SIZE;
-        std::memcpy(m_block.data(), &shifted_message[block_nb * BLOCK_SIZE], rem_len);
-
-        m_len = rem_len;
-        m_tot_len += (block_nb + 1) * BLOCK_SIZE;
     }
 
     void finalize(std::array<unsigned char, DIGEST_SIZE>& digest) override {
-        size_t block_nb, pm_len, len_b;
+        uint64_t len_b_low = (m_tot_len + m_len) * 8;
+        uint64_t len_b_high = 0;
 
-        block_nb = 1 + ((BLOCK_SIZE - 17) < (m_len % BLOCK_SIZE));
-        len_b = (m_tot_len + m_len) * 8;
-        pm_len = block_nb * BLOCK_SIZE;
+        size_t pad_len = (m_len < 112) ? (112 - m_len) : (BLOCK_SIZE + 112 - m_len);
+        std::vector<unsigned char> padding(pad_len + 16, 0);
+        padding[0] = 0x80;
 
-        std::memset(m_block.data() + m_len, 0, pm_len - m_len);
-        m_block[m_len] = 0x80;
-        unpack32(static_cast<uint32_t>(len_b), m_block.data() + pm_len - 4);
+        for (size_t i = 0; i < 8; ++i) {
+            padding[pad_len + i] = (len_b_high >> ((7 - i) * 8)) & 0xFF;
+            padding[pad_len + 8 + i] = (len_b_low >> ((7 - i) * 8)) & 0xFF;
+        }
 
-        transform(m_block.data(), block_nb);
+        update(padding.data(), padding.size());
 
-        for (size_t i = 0; i < STATE_SIZE; i++) {
-            unpack64(reinterpret_cast<const unsigned char*>(&m_h[i]), reinterpret_cast<uint64_t*>(&digest[i * 8]));
+        for (size_t i = 0; i < STATE_SIZE; ++i) {
+            for (size_t j = 0; j < 8; ++j) {
+                digest[i * 8 + j] = (m_h[i] >> ((7 - j) * 8)) & 0xFF;
+            }
         }
     }
 
@@ -77,22 +77,24 @@ public:
         std::array<unsigned char, DIGEST_SIZE> digest;
         digest.fill(0);
 
-        update(reinterpret_cast<const unsigned char*>(input.c_str()), input.length());
+        init();
+        update(reinterpret_cast<const unsigned char*>(input.data()), input.size());
         finalize(digest);
 
         std::ostringstream oss;
+        oss << std::hex << std::setw(2) << std::setfill('0');
         for (const auto& byte : digest) {
-            oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+            oss << std::setw(2) << static_cast<unsigned int>(byte);
         }
 
         return oss.str();
     }
 
 private:
-    std::array<uint64_t, STATE_SIZE> m_h;
-    std::array<unsigned char, BLOCK_SIZE> m_block;
-    size_t m_len;
-    size_t m_tot_len;
+    std::array<uint64_t, STATE_SIZE> m_h{};
+    std::array<unsigned char, BLOCK_SIZE> m_block{};
+    size_t m_len = 0;
+    size_t m_tot_len = 0;
 
     static constexpr std::array<uint64_t, 80> k = {
         0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL,
@@ -119,70 +121,78 @@ private:
 
     void init() {
         m_h = {
-            0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL, 0x3c6ef372fe94f82bULL, 0xa54ff53a5f1d36f1ULL,
-            0x510e527fade682d1ULL, 0x9b05688c2b3e6c1fULL, 0x1f83d9abfb41bd6bULL, 0x5be0cd19137e2179ULL
+            0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL,
+            0x3c6ef372fe94f82bULL, 0xa54ff53a5f1d36f1ULL,
+            0x510e527fade682d1ULL, 0x9b05688c2b3e6c1fULL,
+            0x1f83d9abfb41bd6bULL, 0x5be0cd19137e2179ULL
         };
         m_len = 0;
         m_tot_len = 0;
+        m_block.fill(0);
     }
 
-    void transform(const unsigned char* message, size_t block_nb) {
-        uint64_t w[80], wv[8], t1, t2;
+    void transform(const unsigned char* message_block) {
+        std::array<uint64_t, 80> w{};
+        std::array<uint64_t, 8> wv{};
+        uint64_t t1, t2;
 
-        for (size_t i = 0; i < block_nb; i++) {
-            const unsigned char* sub_block = message + (i * BLOCK_SIZE);
-
-            for (size_t j = 0; j < 16; j++) {
-                unpack64(sub_block + j * 8, &w[j]);
+        for (size_t i = 0; i < 16; ++i) {
+            w[i] = 0;
+            for (size_t j = 0; j < 8; ++j) {
+                w[i] |= (static_cast<uint64_t>(message_block[i * 8 + j]) << ((7 - j) * 8));
             }
+        }
 
-            for (size_t j = 16; j < 80; j++) {
-                w[j] = SHA512_F4(w[j - 2]) + w[j - 7] + SHA512_F3(w[j - 15]) + w[j - 16];
-            }
+        for (size_t i = 16; i < 80; ++i) {
+            w[i] = SHA512_F4(w[i - 2]) + w[i - 7] + SHA512_F3(w[i - 15]) + w[i - 16];
+        }
 
-            for (size_t j = 0; j < STATE_SIZE; j++) {
-                wv[j] = m_h[j];
-            }
+        wv = m_h;
 
-            for (size_t j = 0; j < 80; j++) {
-                t1 = wv[7] + SHA512_F2(wv[4]) + SHA2_CH(wv[4], wv[5], wv[6]) + k[j] + w[j];
-                t2 = SHA512_F1(wv[0]) + SHA2_MAJ(wv[0], wv[1], wv[2]);
-                wv[7] = wv[6];
-                wv[6] = wv[5];
-                wv[5] = wv[4];
-                wv[4] = wv[3] + t1;
-                wv[3] = wv[2];
-                wv[2] = wv[1];
-                wv[1] = wv[0];
-                wv[0] = t1 + t2;
-            }
+        for (size_t i = 0; i < 80; ++i) {
+            t1 = wv[7] + SHA512_F2(wv[4]) + SHA2_CH(wv[4], wv[5], wv[6]) + k[i] + w[i];
+            t2 = SHA512_F1(wv[0]) + SHA2_MAJ(wv[0], wv[1], wv[2]);
+            wv[7] = wv[6];
+            wv[6] = wv[5];
+            wv[5] = wv[4];
+            wv[4] = wv[3] + t1;
+            wv[3] = wv[2];
+            wv[2] = wv[1];
+            wv[1] = wv[0];
+            wv[0] = t1 + t2;
+        }
 
-            for (size_t j = 0; j < STATE_SIZE; j++) {
-                m_h[j] += wv[j];
-            }
+        for (size_t i = 0; i < STATE_SIZE; ++i) {
+            m_h[i] += wv[i];
         }
     }
 
-    static uint64_t SHA512_F1(uint64_t x) { return (ROTR(x, 28) ^ ROTR(x, 34) ^ ROTR(x, 39)); }
-    static uint64_t SHA512_F2(uint64_t x) { return (ROTR(x, 14) ^ ROTR(x, 18) ^ ROTR(x, 41)); }
-    static uint64_t SHA512_F3(uint64_t x) { return (ROTR(x, 1) ^ ROTR(x, 8) ^ (x >> 7)); }
-    static uint64_t SHA512_F4(uint64_t x) { return (ROTR(x, 19) ^ ROTR(x, 61) ^ (x >> 6)); }
-    static uint64_t SHA2_CH(uint64_t x, uint64_t y, uint64_t z) { return ((x & y) ^ (~x & z)); }
-    static uint64_t SHA2_MAJ(uint64_t x, uint64_t y, uint64_t z) { return ((x & y) ^ (x & z) ^ (y & z)); }
-
-    static uint64_t ROTR(uint64_t x, uint64_t n) { return ((x >> n) | (x << (64 - n))); }
-
-    void unpack64(const unsigned char* input, uint64_t* output) {
-        *output = 0;
-        for (size_t i = 0; i < 8; ++i) {
-            *output |= (static_cast<uint64_t>(input[i]) << ((7 - i) * 8));
-        }
+    static constexpr inline uint64_t ROTR(uint64_t x, uint64_t n) noexcept {
+        return (x >> n) | (x << (64 - n));
     }
 
-    void unpack32(uint32_t val, unsigned char* buf) {
-        for (size_t i = 0; i < 4; ++i) {
-            buf[i] = static_cast<unsigned char>((val >> ((3 - i) * 8)) & 0xff);
-        }
+    static constexpr inline uint64_t SHA512_F1(uint64_t x) noexcept {
+        return ROTR(x, 28) ^ ROTR(x, 34) ^ ROTR(x, 39);
+    }
+
+    static constexpr inline uint64_t SHA512_F2(uint64_t x) noexcept {
+        return ROTR(x, 14) ^ ROTR(x, 18) ^ ROTR(x, 41);
+    }
+
+    static constexpr inline uint64_t SHA512_F3(uint64_t x) noexcept {
+        return ROTR(x, 1) ^ ROTR(x, 8) ^ (x >> 7);
+    }
+
+    static constexpr inline uint64_t SHA512_F4(uint64_t x) noexcept {
+        return ROTR(x, 19) ^ ROTR(x, 61) ^ (x >> 6);
+    }
+
+    static constexpr inline uint64_t SHA2_CH(uint64_t x, uint64_t y, uint64_t z) noexcept {
+        return (x & y) ^ (~x & z);
+    }
+
+    static constexpr inline uint64_t SHA2_MAJ(uint64_t x, uint64_t y, uint64_t z) noexcept {
+        return (x & y) ^ (x & z) ^ (y & z);
     }
 };
 
@@ -198,17 +208,19 @@ public:
     StringObfuscator() {
         setDefaultHashAlgorithm();
     }
+
     std::string obfuscate(const std::string& input) override {
         if (!shaAlgorithm) {
             throw std::runtime_error("Hash algorithm not set.");
         }
         return shaAlgorithm->hash(input);
     }
+
     std::string dynamicObfuscate(const std::string& input) override {
         std::string processedString = preProcess(input);
-        std::string obfuscated = obfuscate(processedString);
-        return obfuscated;
+        return obfuscate(processedString);
     }
+
     void setHashAlgorithm(std::unique_ptr<IHashAlgorithm> sha) {
         shaAlgorithm = std::move(sha);
     }
@@ -217,13 +229,14 @@ private:
     void setDefaultHashAlgorithm() {
         shaAlgorithm = std::make_unique<SHA512>();
     }
+
     std::string preProcess(const std::string& input) {
         std::string processed = input;
-        for (size_t i = 0; i < processed.length(); ++i) {
-            processed[i] = processed[i] ^ 0x5A;
-        }
+        std::transform(processed.begin(), processed.end(), processed.begin(),
+                       [](unsigned char c) { return c ^ 0x5A; });
         return processed;
     }
+
     std::unique_ptr<IHashAlgorithm> shaAlgorithm;
 };
 
