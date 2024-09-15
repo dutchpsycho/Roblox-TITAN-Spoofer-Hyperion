@@ -1,3 +1,5 @@
+/* Unused, cred to Synapse X 2018 */
+
 #ifndef SYSTEMFINGERPRINT_H
 #define SYSTEMFINGERPRINT_H
 

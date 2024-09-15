@@ -19,13 +19,20 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
 - 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
 
-# V4.5 > V5 📈
+## V5 > V5.1
+- Removed fingerprint spoofing due to conflicts with PC executors key systems
+
+
+<details>
+  <summary><h3>V4.5 > V5 📈</h3></summary>
 
 - Added fingerprint spoofing, same method Synapse X used
 - Added CPUID, PC HWID, PDS, SID, HDD, CPU... spoofing
 - Added string encryption
 - Added self-elevation technique
 - Re-Organized project
+
+</details>
 
 <details>
   <summary><h3>V4.2 -> V4.5 📈</h3></summary>

@@ -1,3 +1,5 @@
+/* Unused, cred to Synapse X 2018 */
+
 #ifndef STRING_OBFUSCATOR_HXX
 #define STRING_OBFUSCATOR_HXX
 
