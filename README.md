@@ -19,7 +19,7 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 - ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
 - 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
 
-## V5 > V5.1
+## V5 > V5.1 📈
 - Removed fingerprint spoofing due to conflicts with PC executors key systems
 
 
