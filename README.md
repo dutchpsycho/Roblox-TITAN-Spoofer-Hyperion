@@ -35,54 +35,6 @@ TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
 </details>
 
 <details>
-  <summary><h3>V4.2 -> V4.5 📈</h3></summary>
-
-- Resolved issue where your Roblox mouse sense, volume & graphic settings would be changed after spoofing (Due to removal of GlobalXML) I've created a function to re-generate this post spoofing.
-- Replaced NT Hook with Inlined
-- Added more fallbacks
-- Quality of Life
-
-</details>
-
-<details>
-  <summary><h3>V4.0 -> V4.2 📈</h3></summary>
-
-- Fixed errors where you'd have to install vcruntime or msvc dll's (C++ comp tools)
-- Dynamically linked SQL3.dll (No need to keep it as an external file now)
-- Removed SQL3.dll, no longer needed.
-
-</details>
-
-<details>
-  <summary><h3>V3.6 -> V4.0 📈</h3></summary>
-
-- Confirmed spoofer works as of banwave on 2024-08-23(23rd Aug, 2024)
-- Completely resolved all MAC spoofing issues & bugs
-- Changed to use Windows Instrumentals for MAC spoofing
-- Changed the way the CLI handles logs
-- Refactored Project Layout & Solution
-- Removed useless functionality (SigFucker Mem)
-
-</details>
-
-<details>
-  <summary><h3>V3.1 -> V3.6 📈</h3></summary>
-
-- Added Headless version (No UI, just run to spoof, can be put in startup)
-- Added targeted Browser Cookie Cleaning (Option on UI version, not included in Headless)
-- Added backup for this in case `SQL3.dll` fails or dynamic linking fails `(Python/CookieCacheCleaner.py)`
-- Added DebugProtect from Roblox
-- Added useful logging
-- Added fallbacks depending on spoofs
-- Fixed E-DID spoofing
-- Fixed WMIC initialization
-- Removed useless registry spoofs
-- Fixed rare buffer overflow 
-- Removed restoration logic (Annoying to maintain, nobody uses it)
-
-</details>
-
-<details>
   <summary><h1>Installation & Setup 📦</h3></summary>
 
 If you prefer not to compile the code yourself, you can download the exe's (Binaries) from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
