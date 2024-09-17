@@ -1,21 +1,26 @@
 # TITAN Spoofer (Roblox, Hyperion)
 
-TITAN © 2024 by Damon is licensed under CC BY-NC-ND 4.0
+TITAN Softwork Solutions © 2024
 
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
-![TITAN Spoofer](./Images/STRIKE.png)
-![TITAN Spoofer](./Images/V5.png)
+![TITAN Spoofer](./Images/VITAL.png)
+![TITAN Spoofer](./Images/PVITAL.png)
 
-**[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection mechanisms and Roblox's ban API.
+**[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection mechanisms & Roblox's ban API.
 
-[![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-blue)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
-[![Discord](https://img.shields.io/badge/TITAN%201.5K%20Server%20Limit-7289DA?logo=discord&logoColor=white&label)](https://discord.gg/yUWyvT9JyP)
+Recently, Roblox introduced it's ban API & combined it with Hyperion's detection vectors, after seeing executor developers create paid spoofers I decided to do the exploiting community a favour & make a free one.
+
+The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. You get the idea (Hopefully)
+
+![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)
+![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
+
 
 ## Features 💎
 
-- 🎯 **Fully Targeted**: This spoofer targets Roblox & It's AntiCheat in specific.
-- 👤 **Roblox Ban API Evasion**: The spoofer essentially negates Roblox's attempts to detect your alt accounts system side.
-- 🔐 **Hyperion Unban**: If you're banned by Hyperion (HWID banned) the spoofer completely removes that.
+- 🎯 **Fully Targeted**: This spoofer targets Roblox in specific, meaning it spoofs exactly what Roblox checks. This is not for other games.
+- 👤 **Roblox Ban API Evasion**: The spoofer essentially voids Roblox's attempts to detect your alt accounts system side.
+- 💻 **Hyperion Unban**: If you're banned by Hyperion the spoofer completely removes that (403 Auth err or Roblox js doesn't open)
 - ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
 - 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
 
@@ -51,49 +56,37 @@ If you prefer not to compile the code yourself, you can download the exe's (Bina
    - Launch Visual Studio (The purple one, not blue)
    - Navigate to the directory where the repository was cloned.
    - Open the `TITAN Spoofer.sln` file.
-
-3. **Configure Build Settings:**
-
-   - Ensure that the build configuration is set to `Release` mode.
-   - Select the appropriate platform (`x64`).
-
-4. **Build the Project:**
+  
+3. **Build:**
 
    - Click on `Build > Build Solution` in the Visual Studio menu.
-   - The compiled binaries will be located in the `/x64/Release` directory.
+   - The compiled binaries will be located in the `/x64` directory.
+
+The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. You get the idea (Hopefully)
 
 </details>
 
 <details>
   <summary><h1>Information 🌐</h3></summary>
 
-Hyperion is Roblox's Anti-Tamper owned by Byfron. Roblox owns Byfron.
+Hyperion is Roblox's Anti-Tamper owned by Byfron, Roblox owns Byfron.
 
-1. **TITAN_Spoofer.exe:**
+1. **TITAN Spoofer.exe:**
    - Includes a Command Line Interface (CLI) navigated by arrow keys.
    - Provides an option to clear your Roblox cookie cache.
-   - Use this executable if you need CLI functionality.
 
-2. **HEADLESS_TITAN_Spoofer.exe:**
-   - Does not include the CLI.
-   - Does not CacheClear
-   - Acts the same as the "Spoof" command in `TITAN_Spoofer.exe`.
-   - Controlled by the `#define HEADLESS` directive in `Master.cpp`.
+2. **TITAN Spoofer THEMIDA.exe:**
+   - Protected version of TITAN Spoofer
 
 3. **Cache Cleaner:**
-   - If the cache cleaner in `TITAN_Spoofer.exe` is not working, use `Python/CookieCacheCleaner.py` to clear the Roblox cookie cache.
-
-4. **Spoofing on Startup:**
-   - Press `Windows + R`, type `shell:startup`, and press Enter.
-   - Create a shortcut to `HEADLESS_TITAN_Spoofer.exe` in the startup folder, or drag the `.exe` file there.
-   - Note: This method does not work for `TITAN_Spoofer.exe` (CLI version).
+   - If the cache cleaner in `TITAN Spoofer.exe` is not working, use `Python/CookieCacheCleaner.py` to clear the Roblox cookie cache.
 
 </details>
 
 ## Credits 🎓
 
-- **Lead Developer:** Swedish.Psycho
-- **Contributors:** livinlavisa, .ranu., bstaipan
+- **Developer:** Damon
+- **Contributors:** Terror, bstaipan, .ranu
 
 ### Disclaimer ⚠️
 
