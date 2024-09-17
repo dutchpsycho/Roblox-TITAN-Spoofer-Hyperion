@@ -24,70 +24,86 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 - ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
 - 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
 
-## V5 > V5.1 📈
-- Removed fingerprint spoofing due to conflicts with PC executors key systems
+<br>
 
+# 📈 Version History
+
+### **V5 > V5.1**
+
+- Removed fingerprint spoofing to resolve conflicts with PC executors' key systems.
 
 <details>
-  <summary><h3>V4.5 > V5 📈</h3></summary>
+  <summary>🔽 View V4.5 > V5 Changes</summary>
 
-- Added fingerprint spoofing, same method Synapse X used
-- Added CPUID, PC HWID, PDS, SID, HDD, CPU... spoofing
-- Added string encryption
-- Added self-elevation technique
-- Re-Organized project
+- Added fingerprint spoofing using the same method as Synapse X.
+- Implemented spoofing for CPUID, PC HWID, PDS, SID, HDD, CPU, and more.
+- Introduced string encryption for enhanced security.
+- Added a self-elevation technique for smoother operations.
+- Reorganized project structure for better maintainability.
 
 </details>
 
-<details>
-  <summary><h1>Installation & Setup 📦</h3></summary>
+<br>
 
-If you prefer not to compile the code yourself, you can download the exe's (Binaries) from **[TITAN's Discord](https://discord.gg/yUWyvT9JyP)**. Otherwise, follow the guide below.
+# 📦 Installation & Setup
 
-1. **Clone the repository:**
+Prefer not to compile the code yourself? **[Download the binaries from TITAN's Discord](https://discord.gg/yUWyvT9JyP).**
+
+Otherwise, follow the steps below:
+
+1. **Clone the Repository**
 
     ```sh
     git clone https://github.com/dutchpsycho/TITAN-Spoofer.git
     cd TITAN-Spoofer
     ```
 
-2. **Open the Solution File (.sln):**
+2. **Open the Solution File (.sln)**
 
-   - Launch Visual Studio (The purple one, not blue)
-   - Navigate to the directory where the repository was cloned.
-   - Open the `TITAN Spoofer.sln` file.
-  
-3. **Build:**
+    - Launch **Visual Studio** (ensure it's the correct version).
+    - Navigate to the cloned repository directory.
+    - Open `TITAN Spoofer.sln`.
 
-   - Click on `Build > Build Solution` in the Visual Studio menu.
-   - The compiled binaries will be located in the `/x64` directory.
+3. **Build the Project**
 
-The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. You get the idea (Hopefully)
+    - In Visual Studio, go to `Build` > `Build Solution`.
+    - The compiled binaries will be located in the `/x64` directory.
 
-</details>
+**Usage Reminder:**
+- Spoof after exploiting and before returning to your main account.
+- Repeat spoofing before each new exploit session.
 
-<details>
-  <summary><h1>Information 🌐</h3></summary>
+<br>
 
-Hyperion is Roblox's Anti-Tamper owned by Byfron, Roblox owns Byfron.
+# 🌐 Additional Information
 
-1. **TITAN Spoofer.exe:**
-   - Includes a Command Line Interface (CLI) navigated by arrow keys.
-   - Provides an option to clear your Roblox cookie cache.
+**Hyperion** is Roblox's Anti-Tamper system, owned by Byfron, which is in turn owned by Roblox.
 
-2. **TITAN Spoofer THEMIDA.exe:**
-   - Protected version of TITAN Spoofer
+### Components:
 
-3. **Cache Cleaner:**
-   - If the cache cleaner in `TITAN Spoofer.exe` is not working, use `Python/CookieCacheCleaner.py` to clear the Roblox cookie cache.
+1. **TITAN Spoofer.exe**
+   - Features a Command Line Interface (CLI) navigated via arrow keys.
+   - Option to clear your Roblox cookie cache.
 
-</details>
+2. **TITAN Spoofer THEMIDA.exe**
+   - A protected version of TITAN Spoofer for enhanced security.
 
-## Credits 🎓
+3. **Cache Cleaner**
+   - If the cache cleaner in `TITAN Spoofer.exe` fails, use `Python/CookieCacheCleaner.py` to manually clear the Roblox cookie cache.
+
+<br>
+
+# 🎓 Credits
 
 - **Developer:** Damon
 - **Contributors:** Terror, bstaipan, .ranu
 
-### Disclaimer ⚠️
+<br>
+
+# 🎟️ Get Support
+
+Join our [Discord Community](https://discord.gg/yUWyvT9JyP) for support, updates, and to connect with other users.
+
+# ⚠️ Disclaimer
 
 This software is intended for educational and research purposes only. Using this tool to bypass security measures or violate the terms of service of any software, including Roblox, is strictly prohibited. The developers do not endorse or support any illegal activities and will not be held responsible for any misuse of this software.
