@@ -98,8 +98,6 @@ Otherwise, follow the steps below:
 - **Developer:** Damon
 - **Contributors:** Terror, bstaipan, .ranu
 
-<br>
-
 # 🎟️ Get Support
 
 Join our [Discord Community](https://discord.gg/yUWyvT9JyP) for support, updates, and to connect with other users.
