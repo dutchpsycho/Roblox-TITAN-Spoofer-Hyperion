@@ -6,7 +6,7 @@ TITAN Softwork Solutions © 2024
 ![TITAN Spoofer](./Images/VITAL.png)
 ![TITAN Spoofer](./Images/PVITAL.png)
 
-**[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection mechanisms & Roblox's ban API.
+**[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection vecs & Roblox's ban API.
 
 Recently, Roblox introduced it's ban API & combined it with Hyperion's detection vectors, after seeing executor developers create paid spoofers I decided to do the exploiting community a favour & make a free one.
 
@@ -21,7 +21,7 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 - 🎯 **Fully Targeted**: This spoofer targets Roblox in specific, meaning it spoofs exactly what Roblox checks. This is not for other games.
 - 👤 **Roblox Ban API Evasion**: The spoofer essentially voids Roblox's attempts to detect your alt accounts system side.
 - 💻 **Hyperion Unban**: If you're banned by Hyperion the spoofer completely removes that (403 Auth err or Roblox js doesn't open)
-- ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system. 
+- ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system, this is NOT kernel.
 - 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
 
 <br>
@@ -77,19 +77,19 @@ Otherwise, follow the steps below:
 
 # 🌐 Additional Information
 
-**Hyperion** is Roblox's Anti-Tamper system, owned by Byfron, which is in turn owned by Roblox.
+**Hyperion** is Roblox's Anti-Tamper, owned by Byfron, owned by Roblox.
 
 ### Components:
 
 1. **TITAN Spoofer.exe**
-   - Features a Command Line Interface (CLI) navigated via arrow keys.
+   - Features a Command Line Interface (CLI) navigated w arrow keys.
    - Option to clear your Roblox cookie cache.
 
 2. **TITAN Spoofer THEMIDA.exe**
-   - A protected version of TITAN Spoofer for enhanced security.
+   - A protected version of TITAN Spoofer.
 
 3. **Cache Cleaner**
-   - If the cache cleaner in `TITAN Spoofer.exe` fails, use `Python/CookieCacheCleaner.py` to manually clear the Roblox cookie cache.
+   - If the cache cleaner in `TITAN Spoofer.exe` fails, use `Python/CookieCacheCleaner.py` to auto clear the Roblox cookie cache.
 
 <br>
 
