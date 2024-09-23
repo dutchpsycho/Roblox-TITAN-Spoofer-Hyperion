@@ -118,7 +118,72 @@ void HookNtDll() {
     }
 }
 
+bool PermCheck() {
+    SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE);
+    if (!hSCManager) {
+        std::cerr << "Failed to open service control manager." << std::endl;
+        return false;
+    }
+
+    SC_HANDLE hService = OpenService(hSCManager, L"winmgmt", SERVICE_QUERY_STATUS);
+    if (!hService) {
+        std::cerr << "Failed to open WMI service" << std::endl;
+        CloseServiceHandle(hSCManager);
+        return false;
+    }
+
+    SERVICE_STATUS_PROCESS ssStatus;
+    DWORD dwBytesNeeded;
+
+    if (!QueryServiceStatusEx(hService, SC_STATUS_PROCESS_INFO, (LPBYTE)&ssStatus, sizeof(SERVICE_STATUS_PROCESS), &dwBytesNeeded)) {
+        std::cerr << "Failed to query WMI service" << std::endl;
+        CloseServiceHandle(hService);
+        CloseServiceHandle(hSCManager);
+        return false;
+    }
+
+    if (ssStatus.dwCurrentState != SERVICE_RUNNING) {
+        std::cerr << "WMI service is not running" << std::endl;
+        CloseServiceHandle(hService);
+        CloseServiceHandle(hSCManager);
+        return false;
+    }
+
+    CloseServiceHandle(hService);
+    CloseServiceHandle(hSCManager);
+
+    HANDLE hToken;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+        std::cerr << "Failed to open process token" << std::endl;
+        return false;
+    }
+
+    DWORD dwSize = 0;
+    GetTokenInformation(hToken, TokenPrivileges, NULL, 0, &dwSize);
+
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+        std::cerr << "Failed to query token privs" << std::endl;
+        CloseHandle(hToken);
+        return false;
+    }
+
+    std::vector<BYTE> buffer(dwSize);
+    if (!GetTokenInformation(hToken, TokenPrivileges, &buffer[0], dwSize, &dwSize)) {
+        std::cerr << "Failed to retrieve token info" << std::endl;
+        CloseHandle(hToken);
+        return false;
+    }
+
+    CloseHandle(hToken);
+    return true;
+}
+
 bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
+    if (!PermCheck()) {
+        std::cerr << "no permissions or WMI service isnt on" << std::endl;
+        return false;
+    }
+
     HRESULT hres;
     IWbemLocator* pLoc = nullptr;
     IWbemServices* pSvc = nullptr;
@@ -128,40 +193,90 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
 
     hres = CoInitializeEx(0, COINIT_MULTITHREADED);
     if (FAILED(hres)) return false;
-    
-    hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+
+    hres = CoInitializeSecurity(NULL, -1, NULL, NULL,
+        RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
     if (FAILED(hres)) { CoUninitialize(); return false; }
 
     hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
-    if (FAILED(hres) || !pLoc) { CoUninitialize(); return false; }
+    if (FAILED(hres) || !pLoc) {
+        CoUninitialize();
+        return false;
+    }
 
-    hres = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &pSvc);
-    if (FAILED(hres) || !pSvc) { pLoc->Release(); CoUninitialize(); return false; }
+    hres = pLoc->ConnectServer(
+        _bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &pSvc);
+    if (FAILED(hres) || !pSvc) {
+        if (pLoc) pLoc->Release();
+        CoUninitialize();
+        return false;
+    }
 
-    hres = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
-    if (FAILED(hres)) { pSvc->Release(); pLoc->Release(); CoUninitialize(); return false; }
+    hres = pSvc->ExecQuery(
+        bstr_t("WQL"), bstr_t("SELECT * FROM __NAMESPACE WHERE Name = 'CIMV2'"),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+    if (FAILED(hres) || !pEnumerator) {
+        std::cerr << "ROOT\\CIMV2 namespace doesnt exist or I cant access it" << std::endl;
+        if (pSvc) pSvc->Release();
+        if (pLoc) pLoc->Release();
+        CoUninitialize();
+        return false;
+    }
 
-    hres = pSvc->ExecQuery(bstr_t("WQL"), bstr_t(wmicCommand.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-    if (FAILED(hres) || !pEnumerator) { pSvc->Release(); pLoc->Release(); CoUninitialize(); return false; }
+    if (pEnumerator) pEnumerator->Release();
+    pEnumerator = nullptr;
+
+    hres = CoSetProxyBlanket(
+        pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
+        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
+    if (FAILED(hres)) {
+        if (pSvc) pSvc->Release();
+        if (pLoc) pLoc->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    hres = pSvc->ExecQuery(
+        bstr_t("WQL"), bstr_t(wmicCommand.c_str()),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+    if (FAILED(hres) || !pEnumerator) {
+        if (pSvc) pSvc->Release();
+        if (pLoc) pLoc->Release();
+        CoUninitialize();
+        return false;
+    }
 
     while (pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn) == WBEM_S_NO_ERROR) {
         VARIANT vtProp;
         VariantInit(&vtProp);
-        if (SUCCEEDED(pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0))) {
+
+        hres = pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0);
+        if (SUCCEEDED(hres)) {
             std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(12);
             VARIANT vtNewVal;
             VariantInit(&vtNewVal);
+
             vtNewVal.vt = VT_BSTR;
             vtNewVal.bstrVal = _bstr_t(newValue.c_str());
-            if (SUCCEEDED(pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0))) {
+
+            hres = pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0);
+            if (SUCCEEDED(hres)) {
                 std::cout << "Spoofed -> " << propertyName << " :: [ " << newValue << " ]" << std::endl;
             }
+
             VariantClear(&vtNewVal);
         }
+
         VariantClear(&vtProp);
-        pclsObj->Release();
+        if (pclsObj) pclsObj->Release();
+        pclsObj = nullptr;
     }
-    pSvc->Release(); pLoc->Release(); pEnumerator->Release(); CoUninitialize();
+
+    if (pEnumerator) pEnumerator->Release();
+    if (pSvc) pSvc->Release();
+    if (pLoc) pLoc->Release();
+
+    CoUninitialize();
     return true;
 }
 
