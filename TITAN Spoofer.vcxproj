@@ -15,11 +15,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Container\Header\CacheClear.hxx" />
     <ClInclude Include="Container\Header\Fingerprint.hxx" />
     <ClInclude Include="Container\Header\Hyperion.hxx" />
     <ClInclude Include="Container\Header\MAC.hxx" />
-    <ClInclude Include="Container\Header\Resource.h" />
     <ClInclude Include="Container\Header\Roblox.hxx" />
     <ClInclude Include="Container\Util\Elevate.hxx" />
     <ClInclude Include="Container\Util\StringEncryption.hxx" />
@@ -27,13 +25,6 @@
     <ClInclude Include="Include\sqlite3.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="SQL3.dll">
-      <DeploymentContent>true</DeploymentContent>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Container\Core\CacheClear.cxx" />
     <ClCompile Include="Container\Core\Fingerprint.cxx" />
     <ClCompile Include="Container\Core\Hyperion.cxx" />
     <ClCompile Include="Container\Core\MAC.cxx" />

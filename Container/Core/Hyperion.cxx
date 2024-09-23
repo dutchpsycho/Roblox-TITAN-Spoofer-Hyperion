@@ -122,130 +122,46 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
     HRESULT hres;
     IWbemLocator* pLoc = nullptr;
     IWbemServices* pSvc = nullptr;
-
-    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
-    if (FAILED(hres)) {
-        std::cerr << "Failed to initialize COM, error code = 0x" << std::hex << hres << std::endl;
-        return false;
-    }
-
-    hres = CoInitializeSecurity(
-        NULL,
-        -1,
-        NULL,
-        NULL,
-        RPC_C_AUTHN_LEVEL_DEFAULT,
-        RPC_C_IMP_LEVEL_IMPERSONATE,
-        NULL,
-        EOAC_NONE,
-        NULL);
-
-    if (FAILED(hres)) {
-        std::cerr << "Failed to initialize security, error code = 0x" << std::hex << hres << std::endl;
-        CoUninitialize();
-        return false;
-    }
-
-    hres = CoCreateInstance(
-        CLSID_WbemLocator,
-        0,
-        CLSCTX_INPROC_SERVER,
-        IID_IWbemLocator,
-        (LPVOID*)&pLoc);
-
-    if (FAILED(hres) || !pLoc) {
-        std::cerr << "Failed to create IWbemLocator object, error code = 0x" << std::hex << hres << std::endl;
-        CoUninitialize();
-        return false;
-    }
-
-    hres = pLoc->ConnectServer(
-        _bstr_t(L"ROOT\\CIMV2"),
-        NULL,
-        NULL,
-        0,
-        NULL,
-        0,
-        0,
-        &pSvc);
-
-    if (FAILED(hres) || !pSvc) {
-        std::cerr << "Could not connect to WMI namespace ROOT\\CIMV2, error code = 0x" << std::hex << hres << std::endl;
-        if (pLoc) pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hres = CoSetProxyBlanket(
-        pSvc,
-        RPC_C_AUTHN_WINNT,
-        RPC_C_AUTHZ_NONE,
-        NULL,
-        RPC_C_AUTHN_LEVEL_CALL,
-        RPC_C_IMP_LEVEL_IMPERSONATE,
-        NULL,
-        EOAC_NONE);
-
-    if (FAILED(hres)) {
-        std::cerr << "Could not set proxy blanket, error code = 0x" << std::hex << hres << std::endl;
-        pSvc->Release();
-        pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
     IEnumWbemClassObject* pEnumerator = nullptr;
-    hres = pSvc->ExecQuery(
-        bstr_t("WQL"),
-        bstr_t(wmicCommand.c_str()),
-        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-        NULL,
-        &pEnumerator);
-
-    if (FAILED(hres) || !pEnumerator) {
-        std::cerr << "WMI query failed, error code = 0x" << std::hex << hres << std::endl;
-        pSvc->Release();
-        pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
     IWbemClassObject* pclsObj = nullptr;
     ULONG uReturn = 0;
 
-    while (pEnumerator) {
-        HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-        if (0 == uReturn) {
-            break;
-        }
+    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(hres)) return false;
+    
+    hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+    if (FAILED(hres)) { CoUninitialize(); return false; }
+
+    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
+    if (FAILED(hres) || !pLoc) { CoUninitialize(); return false; }
+
+    hres = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &pSvc);
+    if (FAILED(hres) || !pSvc) { pLoc->Release(); CoUninitialize(); return false; }
+
+    hres = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
+    if (FAILED(hres)) { pSvc->Release(); pLoc->Release(); CoUninitialize(); return false; }
+
+    hres = pSvc->ExecQuery(bstr_t("WQL"), bstr_t(wmicCommand.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+    if (FAILED(hres) || !pEnumerator) { pSvc->Release(); pLoc->Release(); CoUninitialize(); return false; }
+
+    while (pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn) == WBEM_S_NO_ERROR) {
         VARIANT vtProp;
         VariantInit(&vtProp);
-        hr = pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0);
-        if (SUCCEEDED(hr)) {
+        if (SUCCEEDED(pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0))) {
             std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(12);
             VARIANT vtNewVal;
             VariantInit(&vtNewVal);
             vtNewVal.vt = VT_BSTR;
             vtNewVal.bstrVal = _bstr_t(newValue.c_str());
-            hr = pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0);
-            if (FAILED(hr)) {
-                std::cerr << "Failed to set property value, error code = 0x" << std::hex << hr << std::endl;
-            }
-            else {
+            if (SUCCEEDED(pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0))) {
                 std::cout << "Spoofed -> " << propertyName << " :: [ " << newValue << " ]" << std::endl;
             }
             VariantClear(&vtNewVal);
         }
-        else {
-            std::cerr << "Failed to get property value, error code = 0x" << std::hex << hr << std::endl;
-        }
         VariantClear(&vtProp);
         pclsObj->Release();
     }
-    pSvc->Release();
-    pLoc->Release();
-    if (pEnumerator) pEnumerator->Release();
-    CoUninitialize();
+    pSvc->Release(); pLoc->Release(); pEnumerator->Release(); CoUninitialize();
     return true;
 }
 

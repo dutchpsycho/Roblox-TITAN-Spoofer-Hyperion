@@ -7,9 +7,6 @@
     <ClInclude Include="Container\Util\Elevate.hxx">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Container\Header\CacheClear.hxx">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Container\Header\MAC.hxx">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -20,9 +17,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Container\Header\Roblox.hxx">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Container\Header\Resource.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Container\Util\StringEncryption.hxx">
@@ -44,13 +38,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SQL3.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Master.cc" />
-    <ClCompile Include="Container\Core\CacheClear.cxx">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Container\Core\Fingerprint.cxx">
       <Filter>Source</Filter>
     </ClCompile>

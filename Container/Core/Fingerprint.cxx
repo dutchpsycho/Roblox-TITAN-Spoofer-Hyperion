@@ -1,7 +1,12 @@
-/* Unused, cred to Synapse X 2018 */
+// @cred to Synapse X 2018 Injection.cpp (base)
+
+/*
+* This file is currently not in use
+* It hasn't been confirmed that hyperion uses these vectors, this is merely a pre-caution
+* This collides with SYNZ's key system
+*/
 
 #include "../Header/Fingerprint.hxx"
-
 #include "../Util/Utils.hxx"
 #include "../Util/StringEncryption.hxx"
 

@@ -9,7 +9,6 @@
 #include "./Container/Header/Fingerprint.hxx"
 #include "./Container/Header/Roblox.hxx"
 #include "./Container/Header/MAC.hxx"
-#include "./Container/Header/CacheClear.hxx"
 
 #include "./Container/Util/Elevate.hxx"
 #include "./Container/Util/Utils.hxx"
@@ -35,14 +34,14 @@
 #ifdef HEADLESS
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    srand(static_cast<unsigned int>(time(nullptr)));
-    std::unique_ptr<SystemFingerprint> fingerprint;
+    //  srand(static_cast<unsigned int>(time(nullptr)));
+    //  std::unique_ptr<SystemFingerprint> fingerprint;
     Elevate();
     SigFucker();
     ClearRoblox();
     spoofMac();
     spoofHyperion();
-    fingerprint = SystemFingerprint::CreateUniqueFingerprint();
+    //  fingerprint = SystemFingerprint::CreateUniqueFingerprint();
     return 0;
 }
 
@@ -83,18 +82,14 @@ https://github.com/dutchpsycho/TITAN-Spoofer         `"YMP
 
 void Menu(int selected) {
     std::string options[] = {
-        "Spoof",
-        "Clear Cookies (Ban API)"
+        "Spoof"
     };
-    std::string subtext = "   [ This will log you out of all your accounts. Refer to antiban-guide in TITAN's Discord. ]";
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 1; ++i) {
         if (i == selected) {
             std::cout << "> " << options[i] << " <" << std::endl;
-            if (i == 1) {
-                std::cout << subtext << std::endl;
-            }
-        } else {
+        }
+        else {
             std::cout << "  " << options[i] << std::endl;
         }
     }
@@ -119,57 +114,39 @@ std::string rands(size_t length) {
 }
 
 int main() {
-    srand(static_cast<unsigned int>(time(nullptr)));
-    std::string windowTitle = rands(24);
-    SetConsoleTitleA(windowTitle.c_str());
+    try {
+        //      srand(static_cast<unsigned int>(time(nullptr)));
+        std::string windowTitle = rands(24);
+        SetConsoleTitleA(windowTitle.c_str());
 
-    SigFucker();
-    TITAN();
-    Elevate();
-
-    int choice = 0;
-    while (true) {
-        system("CLS");
+        SigFucker();
         TITAN();
-        Menu(choice);
-        int key = _getch();
-        if (key == 224) {
-            key = _getch();
-            switch (key) {
-            case 72: // up
-                choice = (choice == 0) ? 1 : choice - 1;
-                break;
-            case 80: // down
-                choice = (choice == 1) ? 0 : choice + 1;
-                break;
-            default:
-                break;
-            }
-        }
-        else if (key == 13) { // enter
-            std::unique_ptr<SystemFingerprint> fingerprint;
-            switch (choice) {
-            case 0: {
+        Elevate();
+
+        int choice = 0;
+        while (true) {
+            system("CLS");
+            TITAN();
+            Menu(choice);
+            int key = _getch();
+            if (key == 13) { // enter
+                //              std::unique_ptr<SystemFingerprint> fingerprint;
                 ClearRoblox();
                 spoofMac();
                 spoofHyperion();
-                fingerprint = SystemFingerprint::CreateUniqueFingerprint();
-                std::cout << "Spoofed Fingerprint Successfully :: [ " << fingerprint->ToString() << " ]\n" << std::endl;
+                //              fingerprint = SystemFingerprint::CreateUniqueFingerprint();
+                //              std::cout << "Spoofed Fingerprint Successfully :: [ " << fingerprint->ToString() << " ]\n" << std::endl;
                 _ps("Operation Finished Successfully, no restart required.", 10);
                 system("pause");
                 break;
             }
-            case 1:
-                ClearRoblox();
-                CacheClear();
-                _ps("Cookie cache cleared.", 10);
-                system("pause");
-                break;
-            default:
-                break;
-            }
         }
     }
+    catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << std::endl;
+        system("pause");
+    }
+    system("pause");
     return 0;
 }
 
