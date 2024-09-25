@@ -1,3 +1,8 @@
+/*
+* Spoofs UUID, PhysicalMem, MachineGUID, E-DID, CurrentUser, RegisteredOwner 
+* USERMODE
+*/
+
 #include "../Header/Hyperion.hxx"
 
 #include "../Util/Utils.hxx"

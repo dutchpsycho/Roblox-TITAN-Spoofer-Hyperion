@@ -2,7 +2,7 @@
 * @Author Damon (Swedish.Psych0)
 * @License TITAN © 2024 by Damon under CC BY-NC-ND 4.0
 * @Namespace TITAN
-* @Version 5.0.0
+* @Version 6.0.0
 */
 
 #include "./Container/Header/Hyperion.hxx"

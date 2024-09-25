@@ -3,7 +3,10 @@
 TITAN Softwork Solutions © 2024
 
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
-![TITAN Spoofer](./Images/PVITAL.png)
+![TITAN Spoofer](./Images/STRIKEA.png)
+![TITAN Spoofer](./Images/POST.png)
+
+<br>
 
 **[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection vecs & Roblox's ban API.
 
@@ -11,25 +14,34 @@ Recently, Roblox introduced it's ban API & combined it with Hyperion's detection
 
 The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. You get the idea (Hopefully)
 
+<br>
+
 ![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)
 ![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
 
+<br>
 
-## Features 💎
+# 🔭  What does it do?
 
-- 🎯 **Fully Targeted**: This spoofer targets Roblox in specific, meaning it spoofs exactly what Roblox checks. This is not for other games.
-- 👤 **Roblox Ban API Evasion**: The spoofer essentially voids Roblox's attempts to detect your alt accounts system side.
-- 💻 **Hyperion Unban**: If you're banned by Hyperion the spoofer completely removes that (403 Auth err or Roblox js doesn't open)
-- ⚠️ **No System Instability or Critical Changes**: Everything the spoofer changes should have no affect to anything else on your system, this is NOT kernel.
-- 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban or "Ban Evasion" guide exists within the TITAN Discord.
+- 👥 **Ban API & Alt Detection evasion**: Using this gives your PC a whole new identitiy, Roblox will have no idea your alts & main are linked.
+- 🔐 **Hyperion/HWID Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
+- 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban guide exists within the TITAN Discord.
 
 <br>
 
 # 📈 Version History
 
-### **V5 > V5.1**
+### V5.1 > V6
+
+- No crazy changes, this will likely be the last update until Roblox/Hyperion changes something. Happy exploiting <3
+- Added pre-com initialization check
+
+<details>
+  <summary>🔽 View V5 > V5.1 Changes</summary>
 
 - Removed fingerprint spoofing to resolve conflicts with PC executors' key systems.
+
+</details>
 
 <details>
   <summary>🔽 View V4.5 > V5 Changes</summary>
@@ -48,12 +60,18 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 
 Prefer not to compile the code yourself? **[Download the binaries from TITAN's Discord](https://discord.gg/yUWyvT9JyP).**
 
+### 📚 Requirements
+
+Visual Studio's C++ building tools
+
+### 🖥️ Guide
+
 Otherwise, follow the steps below:
 
 1. **Clone the Repository**
 
     ```sh
-    git clone https://github.com/dutchpsycho/TITAN-Spoofer.git
+    git clone https://github.com/dutchpsycho/Roblox-TITAN-Spoofer-Hyperion.git
     cd TITAN-Spoofer
     ```
 
@@ -95,7 +113,7 @@ Otherwise, follow the steps below:
 # 🎓 Credits
 
 - **Developer:** Damon
-- **Contributors:** Terror, bstaipan, .ranu
+- **Contributors:** H8, bstaipan, .ranu
 
 <br>
 
