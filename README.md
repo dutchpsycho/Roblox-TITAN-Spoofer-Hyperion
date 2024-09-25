@@ -27,7 +27,7 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 
 ### V5.1 > V6
 
-- No crazy changes, this will likely be the last update until Roblox/Hyperion changes something. Happy exploiting <3
+- No crazy changes, last update until Hyperion changes something. Happy exploiting <3
 - Added pre-com initialization check
 
 <details>
