@@ -9,8 +9,6 @@ TITAN Softwork Solutions © 2024
 ![TITAN Spoofer](./Images/POST.png)
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
 
-<br>
-
 **[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection vecs & Roblox's ban API.
 
 Recently, Roblox introduced it's ban API & combined it with Hyperion's detection vectors, after seeing executor developers create paid spoofers I decided to do the exploiting community a favour & make a free one.
