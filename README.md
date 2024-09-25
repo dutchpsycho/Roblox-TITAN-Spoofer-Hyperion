@@ -2,9 +2,12 @@
 
 TITAN Softwork Solutions © 2024
 
-![TITAN Spoofer](./Images/TITAN%20(Custom).png)
+![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)
+![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
+
 ![TITAN Spoofer](./Images/STRIKEA.png)
 ![TITAN Spoofer](./Images/POST.png)
+![TITAN Spoofer](./Images/TITAN%20(Custom).png)
 
 <br>
 
@@ -13,13 +16,6 @@ TITAN Softwork Solutions © 2024
 Recently, Roblox introduced it's ban API & combined it with Hyperion's detection vectors, after seeing executor developers create paid spoofers I decided to do the exploiting community a favour & make a free one.
 
 The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. You get the idea (Hopefully)
-
-<br>
-
-![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)
-![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
-
-<br>
 
 # 🔭  What does it do?
 
@@ -120,6 +116,8 @@ Otherwise, follow the steps below:
 # 🎟️ Get Support
 
 Join our [Discord Community](https://discord.gg/yUWyvT9JyP) for support, updates, and to connect with other users.
+
+![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
 
 <br>
 
