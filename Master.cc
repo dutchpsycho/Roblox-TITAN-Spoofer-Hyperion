@@ -73,7 +73,7 @@ void TITAN() {
      `""YMMMMMMMMMMMMMP""'            mMMMm!XXXXX8888888e,
                                     ,d!!XXMM888888888888WW
 Swedish.Psycho                     "MX88dMM888888WWWMMMMMMb
-TITAN Spoofer V5.0                        """```"YMMMMMMMYMMM
+TITAN Spoofer V6.0                        """```"YMMMMMMMYMMM
 Hyperion: 'New phone, who dis?                    `"YMMMMM
 https://github.com/dutchpsycho/TITAN-Spoofer         `"YMP
     )";
