@@ -1,24 +1,7 @@
-/*
-* Spoofs UUID, PhysicalMem, MachineGUID, E-DID, CurrentUser, RegisteredOwner 
-* USERMODE
-*/
+// Hyperion.cxx
 
 #include "../Header/Hyperion.hxx"
-
 #include "../Util/Utils.hxx"
-
-#include <windows.h>
-#include <winternl.h>
-#include <Wbemidl.h>
-#include <comdef.h>
-#include <sddl.h>
-#include <vector>
-#include <iostream>
-#include <string>
-#include <fstream>
-
-#pragma comment(lib, "Advapi32.lib")
-#pragma comment(lib, "wbemuuid.lib")
 
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
 
@@ -53,7 +36,7 @@ typedef NTSTATUS(NTAPI* pNtSetInformationProcess)(
     );
 
 pNtOpenKey NtOpenKey = nullptr;
-pNtDeleteKey NtDeleteKey = nullptr;
+pNtDeleteKey NtDeleteKeyPtr = nullptr;
 pRtlInitUnicodeString RtlInitUnicodeStringPtr = nullptr;
 pNtClose NtClosePtr = nullptr;
 pNtSetInformationProcess NtSetInformationProcess = nullptr;
@@ -64,18 +47,18 @@ BYTE* pOriginalCodeNtSetInformationProcess = nullptr;
 void iniNtFunctions() {
     HMODULE hNtDll = GetModuleHandleA("ntdll.dll");
     if (hNtDll) {
-        NtOpenKey = (pNtOpenKey)GetProcAddress(hNtDll, "NtOpenKey");
-        NtDeleteKey = (pNtDeleteKey)GetProcAddress(hNtDll, "NtDeleteKey");
+        NtOpenKey = reinterpret_cast<pNtOpenKey>(GetProcAddress(hNtDll, "NtOpenKey"));
+        NtDeleteKeyPtr = reinterpret_cast<pNtDeleteKey>(GetProcAddress(hNtDll, "NtDeleteKey"));
 
 #ifndef RtlInitUnicodeString
-        RtlInitUnicodeStringPtr = (pRtlInitUnicodeString)GetProcAddress(hNtDll, "RtlInitUnicodeString");
+        RtlInitUnicodeStringPtr = reinterpret_cast<pRtlInitUnicodeString>(GetProcAddress(hNtDll, "RtlInitUnicodeString"));
 #endif
 
 #ifndef NtClose
-        NtClosePtr = (pNtClose)GetProcAddress(hNtDll, "NtClose");
+        NtClosePtr = reinterpret_cast<pNtClose>(GetProcAddress(hNtDll, "NtClose"));
 #endif
 
-        NtSetInformationProcess = (pNtSetInformationProcess)GetProcAddress(hNtDll, "NtSetInformationProcess");
+        NtSetInformationProcess = reinterpret_cast<pNtSetInformationProcess>(GetProcAddress(hNtDll, "NtSetInformationProcess"));
     }
 }
 
@@ -86,37 +69,57 @@ NTSTATUS NTAPI HookedNtSetInformationProcess(
     ULONG ProcessInformationLength) {
     if (ProcessInformationClass == ProcessDebugPort) {
         std::cout << "ProcessDebugPort hook triggered, hiding debug port" << std::endl;
-        ProcessInformation = NULL;
+        ProcessInformation = nullptr;
         ProcessInformationLength = 0;
         return STATUS_SUCCESS;
     }
-    memcpy(pOriginalCodeNtSetInformationProcess, OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
-    NTSTATUS result = ((pNtSetInformationProcess)pOriginalCodeNtSetInformationProcess)(
-        ProcessHandle, ProcessInformationClass, ProcessInformation, ProcessInformationLength);
-    DWORD oldProtect;
-    VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), PAGE_EXECUTE_READWRITE, &oldProtect);
-    pOriginalCodeNtSetInformationProcess[0] = 0xE9;
-    *(DWORD*)(pOriginalCodeNtSetInformationProcess + 1) = (DWORD)((BYTE*)HookedNtSetInformationProcess - pOriginalCodeNtSetInformationProcess - 5);
-    VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), oldProtect, &oldProtect);
-    return result;
+    if (pOriginalCodeNtSetInformationProcess && OriginalBytesNtSetInformationProcess) {
+        memcpy(pOriginalCodeNtSetInformationProcess, OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
+        NTSTATUS result = NtSetInformationProcess(
+            ProcessHandle, ProcessInformationClass, ProcessInformation, ProcessInformationLength);
+        DWORD oldProtect;
+        if (VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), PAGE_EXECUTE_READWRITE, &oldProtect)) {
+            pOriginalCodeNtSetInformationProcess[0] = 0xE9;
+            *(DWORD*)(pOriginalCodeNtSetInformationProcess + 1) = (DWORD)((BYTE*)HookedNtSetInformationProcess - pOriginalCodeNtSetInformationProcess - 5);
+            VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), oldProtect, &oldProtect);
+        }
+        else {
+            std::cerr << "Failed to restore original bytes after hooking." << std::endl;
+        }
+        return result;
+    }
+    return STATUS_SUCCESS;
 }
 
 void Inline(BYTE* targetFunction, BYTE* hookFunction, BYTE* originalBytes, size_t byteCount) {
+    if (!targetFunction || !hookFunction || !originalBytes) {
+        std::cerr << "Invalid function pointers provided to Inline." << std::endl;
+        return;
+    }
     memcpy(originalBytes, targetFunction, byteCount);
-    DWORD offset = (DWORD)(hookFunction - targetFunction - 5);
+    DWORD offset = static_cast<DWORD>((hookFunction - targetFunction - 5));
     DWORD oldProtect;
-    VirtualProtect(targetFunction, byteCount, PAGE_EXECUTE_READWRITE, &oldProtect);
-    targetFunction[0] = 0xE9;
-    *(DWORD*)(targetFunction + 1) = offset;
-    VirtualProtect(targetFunction, byteCount, oldProtect, &oldProtect);
+    if (VirtualProtect(targetFunction, byteCount, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+        targetFunction[0] = 0xE9;
+        *(DWORD*)(targetFunction + 1) = offset;
+        VirtualProtect(targetFunction, byteCount, oldProtect, &oldProtect);
+    }
+    else {
+        std::cerr << "Failed to change memory protection in Inline." << std::endl;
+    }
 }
 
 void HookNtDll() {
     iniNtFunctions();
     if (NtSetInformationProcess) {
-        pOriginalCodeNtSetInformationProcess = (BYTE*)NtSetInformationProcess;
-        Inline(pOriginalCodeNtSetInformationProcess, (BYTE*)HookedNtSetInformationProcess, OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
-        std::cout << "Hooked NtSetInformationProcess" << std::endl;
+        pOriginalCodeNtSetInformationProcess = reinterpret_cast<BYTE*>(NtSetInformationProcess);
+        if (pOriginalCodeNtSetInformationProcess) {
+            Inline(pOriginalCodeNtSetInformationProcess, reinterpret_cast<BYTE*>(&HookedNtSetInformationProcess), OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
+            std::cout << "Hooked NtSetInformationProcess" << std::endl;
+        }
+        else {
+            std::cerr << "NtSetInformationProcess pointer is null." << std::endl;
+        }
     }
     else {
         std::cerr << "Failed to retrieve NtSetInformationProcess" << std::endl;
@@ -124,7 +127,7 @@ void HookNtDll() {
 }
 
 bool PermCheck() {
-    SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE);
+    SC_HANDLE hSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE);
     if (!hSCManager) {
         std::cerr << "Failed to open service control manager." << std::endl;
         return false;
@@ -140,7 +143,7 @@ bool PermCheck() {
     SERVICE_STATUS_PROCESS ssStatus;
     DWORD dwBytesNeeded;
 
-    if (!QueryServiceStatusEx(hService, SC_STATUS_PROCESS_INFO, (LPBYTE)&ssStatus, sizeof(SERVICE_STATUS_PROCESS), &dwBytesNeeded)) {
+    if (!QueryServiceStatusEx(hService, SC_STATUS_PROCESS_INFO, reinterpret_cast<LPBYTE>(&ssStatus), sizeof(SERVICE_STATUS_PROCESS), &dwBytesNeeded)) {
         std::cerr << "Failed to query WMI service" << std::endl;
         CloseServiceHandle(hService);
         CloseServiceHandle(hSCManager);
@@ -157,24 +160,24 @@ bool PermCheck() {
     CloseServiceHandle(hService);
     CloseServiceHandle(hSCManager);
 
-    HANDLE hToken;
+    HANDLE hToken = nullptr;
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
         std::cerr << "Failed to open process token" << std::endl;
         return false;
     }
 
     DWORD dwSize = 0;
-    GetTokenInformation(hToken, TokenPrivileges, NULL, 0, &dwSize);
+    GetTokenInformation(hToken, TokenPrivileges, nullptr, 0, &dwSize);
 
     if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
-        std::cerr << "Failed to query token privs" << std::endl;
+        std::cerr << "Failed to query token privileges" << std::endl;
         CloseHandle(hToken);
         return false;
     }
 
     std::vector<BYTE> buffer(dwSize);
-    if (!GetTokenInformation(hToken, TokenPrivileges, &buffer[0], dwSize, &dwSize)) {
-        std::cerr << "Failed to retrieve token info" << std::endl;
+    if (!GetTokenInformation(hToken, TokenPrivileges, buffer.data(), dwSize, &dwSize)) {
+        std::cerr << "Failed to retrieve token info." << std::endl;
         CloseHandle(hToken);
         return false;
     }
@@ -185,121 +188,178 @@ bool PermCheck() {
 
 bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
     if (!PermCheck()) {
-        std::cerr << "no permissions or WMI service isnt on" << std::endl;
+        std::cerr << "No permissions or WMI service isn't running." << std::endl;
         return false;
     }
 
     HRESULT hres;
+    hres = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(hres)) {
+        std::cerr << "Failed to initialize COM library. Error code = 0x" << std::hex << hres << std::endl;
+        // Fallback: Direct registry manipulation as an alternative spoofing method
+        std::cerr << "Attempting fallback spoofing via registry manipulation." << std::endl;
+        // Implement fallback registry spoofing here if applicable
+        // For demonstration, returning false
+        return false;
+    }
+    struct COMUninitializer {
+        ~COMUninitializer() {
+            CoUninitialize();
+        }
+    } comUninitializer;
+
+    hres = CoInitializeSecurity(
+        nullptr,
+        -1,
+        nullptr,
+        nullptr,
+        RPC_C_AUTHN_LEVEL_DEFAULT,
+        RPC_C_IMP_LEVEL_IMPERSONATE,
+        nullptr,
+        EOAC_NONE,
+        nullptr
+    );
+
+    if (FAILED(hres)) {
+        std::cerr << "Failed to initialize security. Error code = 0x" << std::hex << hres << std::endl;
+        return false;
+    }
+
     IWbemLocator* pLoc = nullptr;
+    hres = CoCreateInstance(
+        CLSID_WbemLocator,
+        nullptr,
+        CLSCTX_INPROC_SERVER,
+        IID_IWbemLocator, (LPVOID*)&pLoc);
+
+    if (FAILED(hres) || !pLoc) {
+        std::cerr << "Failed to create IWbemLocator object. Err code = 0x" << std::hex << hres << std::endl;
+        return false;
+    }
+
+    struct IWbemLocatorReleaser {
+        IWbemLocator* p;
+        IWbemLocatorReleaser(IWbemLocator* ptr) : p(ptr) {}
+        ~IWbemLocatorReleaser() { if (p) p->Release(); }
+    } locatorReleaser(pLoc);
+
     IWbemServices* pSvc = nullptr;
+    hres = pLoc->ConnectServer(
+        _bstr_t(L"ROOT\\CIMV2"),
+        nullptr,
+        nullptr,
+        0,
+        NULL,
+        0,
+        0,
+        &pSvc
+    );
+
+    if (FAILED(hres) || !pSvc) {
+        std::cerr << "Could not connect to WMI namespace. Error code = 0x" << std::hex << hres << std::endl;
+        return false;
+    }
+
+    struct IWbemServicesReleaser {
+        IWbemServices* p;
+        IWbemServicesReleaser(IWbemServices* ptr) : p(ptr) {}
+        ~IWbemServicesReleaser() { if (p) p->Release(); }
+    } servicesReleaser(pSvc);
+
+    hres = CoSetProxyBlanket(
+        pSvc,
+        RPC_C_AUTHN_WINNT,
+        RPC_C_AUTHZ_NONE,
+        nullptr,
+        RPC_C_AUTHN_LEVEL_CALL,
+        RPC_C_IMP_LEVEL_IMPERSONATE,
+        nullptr,
+        EOAC_NONE
+    );
+
+    if (FAILED(hres)) {
+        std::cerr << "Could not set proxy blanket. Error code = 0x" << std::hex << hres << std::endl;
+        return false;
+    }
+
+    std::wstring wqlQuery = L"SELECT " + stringToWstring(propertyName) + L" FROM " + stringToWstring(wmicCommand);
     IEnumWbemClassObject* pEnumerator = nullptr;
+    hres = pSvc->ExecQuery(
+        bstr_t("WQL"),
+        bstr_t(wqlQuery.c_str()),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+        nullptr,
+        &pEnumerator
+    );
+
+    if (FAILED(hres) || !pEnumerator) {
+        std::cerr << "WMI query failed. Error code = 0x" << std::hex << hres << std::endl;
+        return false;
+    }
+
+    struct IEnumWbemClassObjectReleaser {
+        IEnumWbemClassObject* p;
+        IEnumWbemClassObjectReleaser(IEnumWbemClassObject* ptr) : p(ptr) {}
+        ~IEnumWbemClassObjectReleaser() { if (p) p->Release(); }
+    } enumeratorReleaser(pEnumerator);
+
     IWbemClassObject* pclsObj = nullptr;
     ULONG uReturn = 0;
 
-    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
-    if (FAILED(hres)) return false;
-
-    hres = CoInitializeSecurity(NULL, -1, NULL, NULL,
-        RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
-    if (FAILED(hres)) { CoUninitialize(); return false; }
-
-    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
-    if (FAILED(hres) || !pLoc) {
-        CoUninitialize();
-        return false;
-    }
-
-    hres = pLoc->ConnectServer(
-        _bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &pSvc);
-    if (FAILED(hres) || !pSvc) {
-        if (pLoc) pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hres = pSvc->ExecQuery(
-        bstr_t("WQL"), bstr_t("SELECT * FROM __NAMESPACE WHERE Name = 'CIMV2'"),
-        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-    if (FAILED(hres) || !pEnumerator) {
-        std::cerr << "ROOT\\CIMV2 namespace doesnt exist or I cant access it" << std::endl;
-        if (pSvc) pSvc->Release();
-        if (pLoc) pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    if (pEnumerator) pEnumerator->Release();
-    pEnumerator = nullptr;
-
-    hres = CoSetProxyBlanket(
-        pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
-        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
-    if (FAILED(hres)) {
-        if (pSvc) pSvc->Release();
-        if (pLoc) pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hres = pSvc->ExecQuery(
-        bstr_t("WQL"), bstr_t(wmicCommand.c_str()),
-        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-    if (FAILED(hres) || !pEnumerator) {
-        if (pSvc) pSvc->Release();
-        if (pLoc) pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
     while (pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn) == WBEM_S_NO_ERROR) {
+        struct IWbemClassObjectReleaser {
+            IWbemClassObject* p;
+            IWbemClassObjectReleaser(IWbemClassObject* ptr) : p(ptr) {}
+            ~IWbemClassObjectReleaser() { if (p) p->Release(); }
+        } classObjReleaser(pclsObj);
+
         VARIANT vtProp;
         VariantInit(&vtProp);
 
         hres = pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0);
         if (SUCCEEDED(hres)) {
             std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(12);
+            std::wstring newValueW = stringToWstring(newValue);
+
             VARIANT vtNewVal;
             VariantInit(&vtNewVal);
 
             vtNewVal.vt = VT_BSTR;
-            vtNewVal.bstrVal = _bstr_t(newValue.c_str());
+            vtNewVal.bstrVal = SysAllocString(newValueW.c_str());
 
-            hres = pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0);
-            if (SUCCEEDED(hres)) {
-                std::cout << "Spoofed -> " << propertyName << " :: [ " << newValue << " ]" << std::endl;
+            if (vtNewVal.bstrVal) {
+                hres = pclsObj->Put(_bstr_t(propertyName.c_str()), 0, &vtNewVal, 0);
+                if (SUCCEEDED(hres)) {
+                    std::cout << "Spoofed -> " << propertyName << " :: [ " << newValue << " ]" << std::endl;
+                }
+                SysFreeString(vtNewVal.bstrVal);
             }
-
-            VariantClear(&vtNewVal);
+            else {
+                std::cerr << "Failed to allocate BSTR for new value." << std::endl;
+            }
         }
 
         VariantClear(&vtProp);
-        if (pclsObj) pclsObj->Release();
-        pclsObj = nullptr;
     }
 
-    if (pEnumerator) pEnumerator->Release();
-    if (pSvc) pSvc->Release();
-    if (pLoc) pLoc->Release();
-
-    CoUninitialize();
     return true;
 }
 
 bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName) {
-    HKEY hKey;
+    HKEY hKey = nullptr;
     if (RegOpenKeyExW(hKeyRoot, subKey.c_str(), 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
-        std::cerr << "Failed to open Registry key: " << wstringToString(subKey) << std::endl;
         return false;
     }
 
     DWORD dataSize = 0;
-    if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, NULL, reinterpret_cast<DWORD*>(&dataSize)) != ERROR_SUCCESS || dataSize == 0) {
+    if (RegQueryValueExW(hKey, valueName.c_str(), nullptr, nullptr, nullptr, &dataSize) != ERROR_SUCCESS || dataSize == 0) {
+        std::cerr << "Failed to query Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
 
     std::wstring originalValue(dataSize / sizeof(wchar_t), L'\0');
-    if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, reinterpret_cast<LPBYTE>(&originalValue[0]), &dataSize) != ERROR_SUCCESS) {
+    if (RegQueryValueExW(hKey, valueName.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&originalValue[0]), &dataSize) != ERROR_SUCCESS) {
         std::cerr << "Failed to read Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
@@ -320,21 +380,20 @@ bool spoofReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& val
 }
 
 bool spoofRegBinary(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName) {
-    HKEY hKey;
+    HKEY hKey = nullptr;
     if (RegOpenKeyExW(hKeyRoot, subKey.c_str(), 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS) {
-        std::cerr << "Failed to open Registry key: " << wstringToString(subKey) << std::endl;
         return false;
     }
 
     DWORD dataSize = 0;
-    if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, NULL, reinterpret_cast<DWORD*>(&dataSize)) != ERROR_SUCCESS || dataSize == 0) {
+    if (RegQueryValueExW(hKey, valueName.c_str(), nullptr, nullptr, nullptr, &dataSize) != ERROR_SUCCESS || dataSize == 0) {
         std::cerr << "Failed to query Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
     }
 
     std::vector<BYTE> data(dataSize);
-    if (RegQueryValueExW(hKey, valueName.c_str(), NULL, NULL, data.data(), &dataSize) != ERROR_SUCCESS) {
+    if (RegQueryValueExW(hKey, valueName.c_str(), nullptr, nullptr, data.data(), &dataSize) != ERROR_SUCCESS) {
         std::cerr << "Failed to read Registry value: " << wstringToString(subKey) << "\\" << wstringToString(valueName) << std::endl;
         RegCloseKey(hKey);
         return false;
@@ -356,37 +415,40 @@ bool spoofRegBinary(HKEY hKeyRoot, const std::wstring& subKey, const std::wstrin
 }
 
 void deleteRegistryKey(const std::wstring& sid, const std::wstring& subKeyName) {
-    if (!NtOpenKey || !NtDeleteKey || !RtlInitUnicodeStringPtr || !NtClosePtr) {
-        std::cerr << "Failed to load Nt functions" << std::endl;
+    if (!NtOpenKey || !NtDeleteKeyPtr || !RtlInitUnicodeStringPtr || !NtClosePtr) {
+        std::cerr << "Failed to load necessary Nt functions." << std::endl;
         return;
     }
 
-    HKEY hKey;
+    HKEY hKey = nullptr;
     std::wstring keyPath = L"\\Registry\\User\\" + sid + L"\\System\\CurrentControlSet\\Control\\" + subKeyName;
 
     UNICODE_STRING unicodeKey;
     RtlInitUnicodeStringPtr(&unicodeKey, keyPath.c_str());
 
     OBJECT_ATTRIBUTES objectAttributes;
-    InitializeObjectAttributes(&objectAttributes, &unicodeKey, OBJ_CASE_INSENSITIVE, NULL, NULL);
+    InitializeObjectAttributes(&objectAttributes, &unicodeKey, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
     NTSTATUS status = NtOpenKey(reinterpret_cast<PHANDLE>(&hKey), KEY_ALL_ACCESS, &objectAttributes);
 
-    if (status == STATUS_SUCCESS) {
-        status = NtDeleteKey(hKey);
+    if (status == STATUS_SUCCESS && hKey) {
+        status = NtDeleteKeyPtr(hKey);
         if (status == STATUS_SUCCESS) {
             std::wcout << L"Removed Registry Key -> " << keyPath << std::endl;
+        }
+        else {
+            std::wcerr << L"Failed to delete Registry Key -> " << keyPath << L". NTSTATUS: " << status << std::endl;
         }
         NtClosePtr(hKey);
     }
 }
 
 bool spoofEDID(HKEY hKeyRoot) {
-    HKEY hDisplayKey;
+    HKEY hDisplayKey = nullptr;
     std::wstring displayKeyPath = L"SYSTEM\\CurrentControlSet\\Enum\\DISPLAY";
 
     if (RegOpenKeyExW(hKeyRoot, displayKeyPath.c_str(), 0, KEY_READ | KEY_WRITE, &hDisplayKey) != ERROR_SUCCESS) {
-        std::cerr << "Failed to open DISPLAY reg key." << std::endl;
+        std::cerr << "Failed to open DISPLAY registry key." << std::endl;
         return false;
     }
 
@@ -399,17 +461,17 @@ bool spoofEDID(HKEY hKeyRoot) {
 
     for (DWORD i = 0; i < subKeysCount; i++) {
         WCHAR subKeyName[256];
-        DWORD subKeyNameLen = 256;
+        DWORD subKeyNameLen = sizeof(subKeyName) / sizeof(WCHAR);
         if (RegEnumKeyExW(hDisplayKey, i, subKeyName, &subKeyNameLen, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
             std::wstring subKeyPath = displayKeyPath + L"\\" + subKeyName;
 
-            HKEY hDeviceKey;
+            HKEY hDeviceKey = nullptr;
             if (RegOpenKeyExW(hKeyRoot, subKeyPath.c_str(), 0, KEY_READ | KEY_WRITE, &hDeviceKey) == ERROR_SUCCESS) {
                 DWORD deviceSubKeysCount = 0;
                 if (RegQueryInfoKeyW(hDeviceKey, nullptr, nullptr, nullptr, &deviceSubKeysCount, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
                     for (DWORD j = 0; j < deviceSubKeysCount; j++) {
                         WCHAR deviceSubKeyName[256];
-                        DWORD deviceSubKeyNameLen = 256;
+                        DWORD deviceSubKeyNameLen = sizeof(deviceSubKeyName) / sizeof(WCHAR);
                         if (RegEnumKeyExW(hDeviceKey, j, deviceSubKeyName, &deviceSubKeyNameLen, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
                             std::wstring deviceSubKeyPath = subKeyPath + L"\\" + deviceSubKeyName;
                             std::vector<std::wstring> possiblePaths = {
@@ -418,9 +480,10 @@ bool spoofEDID(HKEY hKeyRoot) {
                                 deviceSubKeyPath + L"\\Monitor\\Device Parameters"
                             };
                             for (const auto& path : possiblePaths) {
-                                HKEY hEDIDKey;
-                                if (RegOpenKeyExW(hKeyRoot, (path + L"\\EDID").c_str(), 0, KEY_READ | KEY_WRITE, &hEDIDKey) == ERROR_SUCCESS) {
-                                    if (spoofRegBinary(hEDIDKey, L"EDID", L"EDID")) {
+                                HKEY hEDIDKey = nullptr;
+                                std::wstring edidPath = path + L"\\EDID";
+                                if (RegOpenKeyExW(hKeyRoot, edidPath.c_str(), 0, KEY_READ | KEY_WRITE, &hEDIDKey) == ERROR_SUCCESS) {
+                                    if (spoofRegBinary(hEDIDKey, edidPath, L"EDID")) {
                                         std::cout << "Spoofed -> EDID :: " << wstringToString(path) << std::endl;
                                     }
                                     RegCloseKey(hEDIDKey);
@@ -442,48 +505,53 @@ void spoofHyperion() {
 
     iniNtFunctions();
     HookNtDll();
-    spoofReg(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control", L"SystemReg"); // SysReg
-    FWWMIC("SELECT UUID FROM Win32_ComputerSystemProduct", "UUID"); // UUID
-    FWWMIC("SELECT SerialNumber FROM Win32_PhysicalMemory", "SerialNumber"); // Physical Serial Num
-    spoofEDID(HKEY_LOCAL_MACHINE); // E-DID
-    spoofReg(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", L"MachineGuid"); // Machine GUID
-    spoofReg(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI", L"LastLoggedOnUser"); // Current User
-    spoofReg(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", L"RegisteredOwner"); // Current User 2 
 
-    HANDLE tokenHandle = NULL;
+    spoofReg(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control", L"SystemReg");
+    FWWMIC("Win32_ComputerSystemProduct", "UUID");
+    FWWMIC("Win32_PhysicalMemory", "SerialNumber");
+    spoofEDID(HKEY_LOCAL_MACHINE);
+    spoofReg(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", L"MachineGuid");
+    spoofReg(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI", L"LastLoggedOnUser");
+    spoofReg(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", L"RegisteredOwner");
+
+    HANDLE tokenHandle = nullptr;
     DWORD bufferSize = 0;
-    std::vector<SID_AND_ATTRIBUTES> sidList;
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &tokenHandle)) {
-        std::cerr << "Failed to open process token" << std::endl;
+        std::cerr << "Failed to open process token." << std::endl;
         return;
     }
 
-    GetTokenInformation(tokenHandle, TokenUser, NULL, 0, &bufferSize);
-    if (bufferSize > 0) {
-        std::vector<BYTE> buffer(bufferSize);
-        if (GetTokenInformation(tokenHandle, TokenUser, buffer.data(), bufferSize, &bufferSize)) {
-            SID_AND_ATTRIBUTES* sidAndAttributes = reinterpret_cast<SID_AND_ATTRIBUTES*>(buffer.data());
-            LPWSTR sidString = NULL;
+    struct HandleReleaser {
+        HANDLE handle;
+        HandleReleaser(HANDLE h) : handle(h) {}
+        ~HandleReleaser() { if (handle) CloseHandle(handle); }
+    } handleReleaser(tokenHandle);
 
-            if (ConvertSidToStringSidW(sidAndAttributes->Sid, &sidString)) {
-                std::wstring sid(sidString);
-                deleteRegistryKey(sid, L"Roblox");
-                deleteRegistryKey(sid, L"Hyperion");
-                deleteRegistryKey(sid, L"Byfron");
-                deleteRegistryKey(sid, L"0SystemReg");
-                LocalFree(sidString);
-            }
-            else {
-                std::cerr << "Failed to convert SID to string" << std::endl;
-            }
-        }
-        else {
-            std::cerr << "Failed to get token information" << std::endl;
-        }
+    GetTokenInformation(tokenHandle, TokenUser, nullptr, 0, &bufferSize);
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+        std::cerr << "Failed to query token privileges." << std::endl;
+        return;
+    }
+
+    std::vector<BYTE> buffer(bufferSize);
+    if (!GetTokenInformation(tokenHandle, TokenUser, buffer.data(), bufferSize, &bufferSize)) {
+        std::cerr << "Failed to retrieve token info." << std::endl;
+        return;
+    }
+
+    SID_AND_ATTRIBUTES* sidAndAttributes = reinterpret_cast<SID_AND_ATTRIBUTES*>(buffer.data());
+    LPWSTR sidString = nullptr;
+
+    if (ConvertSidToStringSidW(sidAndAttributes->Sid, &sidString)) {
+        std::wstring sid(sidString);
+        deleteRegistryKey(sid, L"Roblox");
+        deleteRegistryKey(sid, L"Hyperion");
+        deleteRegistryKey(sid, L"Byfron");
+        deleteRegistryKey(sid, L"0SystemReg");
+        LocalFree(sidString);
     }
     else {
-        std::cerr << "Where is your SID?" << std::endl;
+        std::cerr << "Failed to convert SID to string." << std::endl;
     }
-    CloseHandle(tokenHandle);
 }

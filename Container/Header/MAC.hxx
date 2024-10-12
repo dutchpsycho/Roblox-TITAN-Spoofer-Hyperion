@@ -1,3 +1,5 @@
+// MAC.hxx
+
 #ifndef MAC_HXX
 #define MAC_HXX
 

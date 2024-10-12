@@ -1,8 +1,8 @@
 // @Cred to Synapse X 2018 Injection.cpp (base)
 
 /*
-* This file is currently not in use
-* It hasn't been confirmed that hyperion uses these vectors, this is merely a pre-caution
+* This file is currently not in use as it is not needed
+* Conflicts with Synapse Z's key system. Do not use.
 */
 
 #include "../Header/Fingerprint.hxx"

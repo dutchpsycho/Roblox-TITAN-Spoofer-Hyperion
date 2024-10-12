@@ -3,7 +3,6 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <psapi.h>
-
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -13,21 +12,17 @@
 #include <iterator>
 #include <iostream>
 
-bool IsAdministrator(HANDLE proc)
-{
+bool IsAdministrator(HANDLE proc) {
     bool IsAdmin = false;
     HANDLE hToken = NULL;
-    if (OpenProcessToken(proc, TOKEN_QUERY, &hToken)) 
-    {
+    if (OpenProcessToken(proc, TOKEN_QUERY, &hToken)) {
         TOKEN_ELEVATION TE;
         DWORD rSize = 0;
         if (GetTokenInformation(hToken, TokenElevation, &TE, sizeof(TOKEN_ELEVATION), &rSize))
             IsAdmin = TE.TokenIsElevated;
-
         CloseHandle(hToken);
     }
-
-    return IsAdmin; /* No-throw, assume default permissions */
+    return IsAdmin;
 }
 
 std::string randstring(size_t length) {
@@ -50,6 +45,61 @@ void WindowName() {
 void SigFucker() {
     srand(static_cast<unsigned int>(time(0)));
     WindowName();
+}
+
+void Colour(int color) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+}
+
+void TITAN() {
+    std::string art = R"(
+                              dMb,
+                            ,dMMMMb,          ,,
+                         ,dMMMMMMMMMb, eeee8888"
+                      ,mMMm!!!!XXXXMMMMM"""
+                    ,d!!XXMMXX88888888W"
+                   `MX88dMM8888WWWMMMMMMb,
+                       '""MMMMMMMMMMMMMMMMb
+                         MMMMMMMMMMMMMMMMMMb,
+                        dMMMMMMMMMMMMMMMMMMMMb,,
+            _,dMMMMMMMMMMXXXX!!!!!!!!!!!!!!XXXXXMP
+       _,dMMXX!!!!!!!!!!!!!!!!!!XXXXX888888888WWC
+   _,dMMX!!!MMMM!!!!!!!!XXXXXX888888888888WWMMMMMb,
+  dMMX!!!!!MMM!XXXXXX88888888888888888WWMMMMMMMMMMMb
+ dMMXXXXXX8MMMM88888888888888888WWWMMMMMMMMMMMMMMMMMb    ,d8
+ MMMMWW888888MMMMM8888888WWMMMMMMMMMMMMMMMMMMMMMMMMMMM,d88P'
+  YMMMMMWW888888WWMMMMMMMMMMP"""'    `"YMMMMMMMMMMMXMMMMMP
+     `""YMMMMMMMMMMMMMP""'            mMMMm!XXXXX8888888e,
+                                    ,d!!XXMM888888888888WW
+Swedish.Psycho                     "MX88dMM888888WWWMMMMMMb
+TITAN Spoofer V6.1                        """```"YMMMMMMMYMMM
+Hyperion: 'New phone, who dis?                    `"YMMMMM
+https://github.com/dutchpsycho/TITAN-Spoofer         `"YMP
+    )";
+    std::cout << art << std::endl;
+}
+
+void Menu(int selected) {
+    std::string options[] = {
+        "Spoof"
+    };
+
+    for (int i = 0; i < 1; ++i) {
+        if (i == selected) {
+            std::cout << "> " << options[i] << " <" << std::endl;
+        }
+        else {
+            std::cout << "  " << options[i] << std::endl;
+        }
+    }
+}
+
+void _ps(const std::string& message, int color) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+    std::cout << message << std::endl;
+    SetConsoleTextAttribute(hConsole, 7);
 }
 
 bool readReg(HKEY hKeyRoot, const std::wstring& subKey, const std::wstring& valueName, std::wstring& value) {
@@ -125,6 +175,7 @@ std::wstring stringToWstring(const std::string& str) {
         return std::wstring();
     }
     int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+    if (size_needed <= 0) throw std::runtime_error("MultiByteToWideChar failed");
     std::wstring wstrTo(size_needed, 0);
     MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
     return wstrTo;
@@ -135,6 +186,7 @@ std::string wstringToString(const std::wstring& wstr) {
         return std::string();
     }
     int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+    if (size_needed <= 0) throw std::runtime_error("WideCharToMultiByte failed");
     std::string strTo(size_needed, 0);
     WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
     return strTo;
