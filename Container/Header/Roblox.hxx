@@ -1,21 +1,24 @@
-// Roblox.hxx
-
 #ifndef ROBLOX_HXX
 #define ROBLOX_HXX
 
 #include <windows.h>
-#include <string>
+#include <tlhelp32.h>
+#include <shlobj.h>
+
 #include <filesystem>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <thread>
+#include <regex>
 
 namespace fs = std::filesystem;
 
-bool Freeze(DWORD processId);
-bool Terminate(const std::string& processName);
-bool ScopeProcess(const std::string& processName);
-bool ScopeWindow(const std::string& windowTitle);
-void IndexReg(HKEY hKeyRoot, const std::wstring& searchString);
-bool CopySets(const fs::path& SetFPath);
-std::string NewSets(const std::string& xmlContent);
+bool TerminateProcessSafely(const std::string& processName);
+bool WaitForProcessTermination(const std::string& processName);
+std::string getSystemDrive();
 void ClearRoblox();
 
 #endif
