@@ -22,7 +22,6 @@
     <ClInclude Include="Container\Util\Elevate.hxx" />
     <ClInclude Include="Container\Util\StringEncryption.hxx" />
     <ClInclude Include="Container\Util\Utils.hxx" />
-    <ClInclude Include="Include\sqlite3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Container\Core\Fingerprint.cxx" />
@@ -84,7 +83,7 @@
     <PreprocessorDefinitions>NDEBUG;_CONSOLE;SQLITE_API=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     <OutDir>$(SolutionDir)$(Platform)\</OutDir>
     <IntDir>$(ShortProjectName)\$(Platform)\</IntDir>
-    <TargetName>zombie vs fent</TargetName>
+    <TargetName>TITAN Spoofer</TargetName>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -116,7 +115,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>Default</LanguageStandard_C>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
