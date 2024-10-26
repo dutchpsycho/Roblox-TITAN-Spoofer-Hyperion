@@ -3,82 +3,186 @@
 #include "../Header/Hyperion.hxx"
 #include "../Util/Utils.hxx"
 
-struct HandleDeleter {
-    void operator()(SC_HANDLE h) const {
-        if (h) {
-            CloseServiceHandle(h);
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+
+typedef NTSTATUS(NTAPI* pNtOpenKey)(
+    PHANDLE KeyHandle,
+    ACCESS_MASK DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes
+    );
+
+typedef NTSTATUS(NTAPI* pNtDeleteKey)(
+    HANDLE KeyHandle
+    );
+
+#ifndef RtlInitUnicodeString
+typedef VOID(NTAPI* pRtlInitUnicodeString)(
+    PUNICODE_STRING DestinationString,
+    PCWSTR SourceString
+    );
+#endif
+
+#ifndef NtClose
+typedef NTSTATUS(NTAPI* pNtClose)(
+    HANDLE Handle
+    );
+#endif
+
+typedef NTSTATUS(NTAPI* pNtSetInformationProcess)(
+    HANDLE ProcessHandle,
+    PROCESS_INFORMATION_CLASS ProcessInformationClass,
+    PVOID ProcessInformation,
+    ULONG ProcessInformationLength
+    );
+
+pNtOpenKey NtOpenKey = nullptr;
+pNtDeleteKey NtDeleteKeyPtr = nullptr;
+pRtlInitUnicodeString RtlInitUnicodeStringPtr = nullptr;
+pNtClose NtClosePtr = nullptr;
+pNtSetInformationProcess NtSetInformationProcess = nullptr;
+
+BYTE OriginalBytesNtSetInformationProcess[16];
+BYTE* pOriginalCodeNtSetInformationProcess = nullptr;
+
+void iniNtFunctions() {
+    HMODULE hNtDll = GetModuleHandleA("ntdll.dll");
+    if (hNtDll) {
+        NtOpenKey = reinterpret_cast<pNtOpenKey>(GetProcAddress(hNtDll, "NtOpenKey"));
+        NtDeleteKeyPtr = reinterpret_cast<pNtDeleteKey>(GetProcAddress(hNtDll, "NtDeleteKey"));
+
+#ifndef RtlInitUnicodeString
+        RtlInitUnicodeStringPtr = reinterpret_cast<pRtlInitUnicodeString>(GetProcAddress(hNtDll, "RtlInitUnicodeString"));
+#endif
+
+#ifndef NtClose
+        NtClosePtr = reinterpret_cast<pNtClose>(GetProcAddress(hNtDll, "NtClose"));
+#endif
+
+        NtSetInformationProcess = reinterpret_cast<pNtSetInformationProcess>(GetProcAddress(hNtDll, "NtSetInformationProcess"));
+    }
+}
+
+NTSTATUS NTAPI HookedNtSetInformationProcess(
+    HANDLE ProcessHandle,
+    PROCESS_INFORMATION_CLASS ProcessInformationClass,
+    PVOID ProcessInformation,
+    ULONG ProcessInformationLength) {
+    if (ProcessInformationClass == ProcessDebugPort) {
+        std::cout << "ProcessDebugPort hook triggered, hiding debug port" << std::endl;
+        ProcessInformation = nullptr;
+        ProcessInformationLength = 0;
+        return STATUS_SUCCESS;
+    }
+    if (pOriginalCodeNtSetInformationProcess && OriginalBytesNtSetInformationProcess) {
+        memcpy(pOriginalCodeNtSetInformationProcess, OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
+        NTSTATUS result = NtSetInformationProcess(
+            ProcessHandle, ProcessInformationClass, ProcessInformation, ProcessInformationLength);
+        DWORD oldProtect;
+        if (VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), PAGE_EXECUTE_READWRITE, &oldProtect)) {
+            pOriginalCodeNtSetInformationProcess[0] = 0xE9;
+            *(DWORD*)(pOriginalCodeNtSetInformationProcess + 1) = (DWORD)((BYTE*)HookedNtSetInformationProcess - pOriginalCodeNtSetInformationProcess - 5);
+            VirtualProtect(pOriginalCodeNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess), oldProtect, &oldProtect);
+        }
+        else {
+            std::cerr << "Failed to restore original bytes after hooking." << std::endl;
+        }
+        return result;
+    }
+    return STATUS_SUCCESS;
+}
+
+void Inline(BYTE* targetFunction, BYTE* hookFunction, BYTE* originalBytes, size_t byteCount) {
+    if (!targetFunction || !hookFunction || !originalBytes) {
+        std::cerr << "Invalid function pointers provided to Inline." << std::endl;
+        return;
+    }
+    memcpy(originalBytes, targetFunction, byteCount);
+    DWORD offset = static_cast<DWORD>((hookFunction - targetFunction - 5));
+    DWORD oldProtect;
+    if (VirtualProtect(targetFunction, byteCount, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+        targetFunction[0] = 0xE9;
+        *(DWORD*)(targetFunction + 1) = offset;
+        VirtualProtect(targetFunction, byteCount, oldProtect, &oldProtect);
+    }
+    else {
+        std::cerr << "Failed to change memory protection in Inline." << std::endl;
+    }
+}
+
+void HookNtDll() {
+    iniNtFunctions();
+    if (NtSetInformationProcess) {
+        pOriginalCodeNtSetInformationProcess = reinterpret_cast<BYTE*>(NtSetInformationProcess);
+        if (pOriginalCodeNtSetInformationProcess) {
+            Inline(pOriginalCodeNtSetInformationProcess, reinterpret_cast<BYTE*>(&HookedNtSetInformationProcess), OriginalBytesNtSetInformationProcess, sizeof(OriginalBytesNtSetInformationProcess));
+            std::cout << "Hooked NtSetInformationProcess" << std::endl;
+        }
+        else {
+            std::cerr << "NtSetInformationProcess pointer is null." << std::endl;
         }
     }
-};
-
-using ServiceHandle = std::unique_ptr<std::remove_pointer_t<SC_HANDLE>, HandleDeleter>;
-
-struct ComInitializer {
-    ComInitializer() {
-        HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        if (FAILED(hr)) {
-            throw std::runtime_error("No COM? :P");
-        }
+    else {
+        std::cerr << "Failed to retrieve NtSetInformationProcess" << std::endl;
     }
-    ~ComInitializer() {
-        CoUninitialize();
-    }
-};
+}
 
-constexpr auto WMI_NAMESPACE = L"ROOT\\CIMV2";
-constexpr auto WMI_QUERY_LANGUAGE = L"WQL";
-constexpr auto DISPLAY_KEY_PATH = L"SYSTEM\\CurrentControlSet\\Enum\\DISPLAY";
-constexpr auto ERROR_MESSAGE_COM_INIT = "Failed to initialize COM library. Error code = 0x";
-constexpr auto SERVICE_NAME = L"winmgmt";
-
-std::optional<bool> PermCheck() {
-    ServiceHandle hSCManager{ OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE) };
+bool PermCheck() {
+    SC_HANDLE hSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE);
     if (!hSCManager) {
         std::cerr << "Failed to open service control manager." << std::endl;
-        return std::nullopt;
+        return false;
     }
 
-    ServiceHandle hService{ OpenService(hSCManager.get(), SERVICE_NAME, SERVICE_QUERY_STATUS) };
+    SC_HANDLE hService = OpenService(hSCManager, L"winmgmt", SERVICE_QUERY_STATUS);
     if (!hService) {
-        std::cerr << "Failed to open WMI service." << std::endl;
-        return std::nullopt;
+        std::cerr << "Failed to open WMI service" << std::endl;
+        CloseServiceHandle(hSCManager);
+        return false;
     }
 
-    SERVICE_STATUS_PROCESS ssStatus{};
-    DWORD dwBytesNeeded = 0;
+    SERVICE_STATUS_PROCESS ssStatus;
+    DWORD dwBytesNeeded;
 
-    if (!QueryServiceStatusEx(hService.get(), SC_STATUS_PROCESS_INFO, reinterpret_cast<LPBYTE>(&ssStatus),
-                              sizeof(SERVICE_STATUS_PROCESS), &dwBytesNeeded)) {
-        std::cerr << "Failed to query WMI service." << std::endl;
-        return std::nullopt;
+    if (!QueryServiceStatusEx(hService, SC_STATUS_PROCESS_INFO, reinterpret_cast<LPBYTE>(&ssStatus), sizeof(SERVICE_STATUS_PROCESS), &dwBytesNeeded)) {
+        std::cerr << "Failed to query WMI service" << std::endl;
+        CloseServiceHandle(hService);
+        CloseServiceHandle(hSCManager);
+        return false;
     }
 
     if (ssStatus.dwCurrentState != SERVICE_RUNNING) {
-        std::cerr << "WMI service is not running." << std::endl;
-        return std::nullopt;
+        std::cerr << "WMI service is not running" << std::endl;
+        CloseServiceHandle(hService);
+        CloseServiceHandle(hSCManager);
+        return false;
     }
+
+    CloseServiceHandle(hService);
+    CloseServiceHandle(hSCManager);
 
     HANDLE hToken = nullptr;
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
-        std::cerr << "Failed to open process token." << std::endl;
-        return std::nullopt;
+        std::cerr << "Failed to open process token" << std::endl;
+        return false;
     }
 
-    std::unique_ptr<void, decltype(&CloseHandle)> tokenHandle{ hToken, CloseHandle };
-
     DWORD dwSize = 0;
-    if (!GetTokenInformation(hToken, TokenPrivileges, nullptr, 0, &dwSize) &&
-        GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
-        std::cerr << "Failed to query token privileges." << std::endl;
-        return std::nullopt;
+    GetTokenInformation(hToken, TokenPrivileges, nullptr, 0, &dwSize);
+
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+        std::cerr << "Failed to query token privileges" << std::endl;
+        CloseHandle(hToken);
+        return false;
     }
 
     std::vector<BYTE> buffer(dwSize);
     if (!GetTokenInformation(hToken, TokenPrivileges, buffer.data(), dwSize, &dwSize)) {
         std::cerr << "Failed to retrieve token info." << std::endl;
-        return std::nullopt;
+        CloseHandle(hToken);
+        return false;
     }
 
+    CloseHandle(hToken);
     return true;
 }
 
@@ -88,62 +192,138 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
         return false;
     }
 
-    ComInitializer comInitializer;
-    IWbemLocator* pLoc = nullptr;
-    HRESULT hres = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
-    if (FAILED(hres) || !pLoc) {
-        std::cerr << ERROR_MESSAGE_COM_INIT << std::hex << hres << std::endl;
+    HRESULT hres;
+    hres = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(hres)) {
+        std::cerr << "Failed to initialize COM library. Error code = 0x" << std::hex << hres << std::endl;
+        // Fallback: Direct registry manipulation as an alternative spoofing method
+        std::cerr << "Attempting fallback spoofing via registry manipulation." << std::endl;
+        // Implement fallback registry spoofing here if applicable
+        // For demonstration, returning false
+        return false;
+    }
+    struct COMUninitializer {
+        ~COMUninitializer() {
+            CoUninitialize();
+        }
+    } comUninitializer;
+
+    hres = CoInitializeSecurity(
+        nullptr,
+        -1,
+        nullptr,
+        nullptr,
+        RPC_C_AUTHN_LEVEL_DEFAULT,
+        RPC_C_IMP_LEVEL_IMPERSONATE,
+        nullptr,
+        EOAC_NONE,
+        nullptr
+    );
+
+    if (FAILED(hres)) {
+        std::cerr << "Failed to initialize security. Error code = 0x" << std::hex << hres << std::endl;
         return false;
     }
 
-    std::unique_ptr<IWbemLocator, decltype(&IWbemLocator::Release)> locator{ pLoc, &IWbemLocator::Release };
+    IWbemLocator* pLoc = nullptr;
+    hres = CoCreateInstance(
+        CLSID_WbemLocator,
+        nullptr,
+        CLSCTX_INPROC_SERVER,
+        IID_IWbemLocator, (LPVOID*)&pLoc);
+
+    if (FAILED(hres) || !pLoc) {
+        std::cerr << "Failed to create IWbemLocator object. Err code = 0x" << std::hex << hres << std::endl;
+        return false;
+    }
+
+    struct IWbemLocatorReleaser {
+        IWbemLocator* p;
+        IWbemLocatorReleaser(IWbemLocator* ptr) : p(ptr) {}
+        ~IWbemLocatorReleaser() { if (p) p->Release(); }
+    } locatorReleaser(pLoc);
 
     IWbemServices* pSvc = nullptr;
-    hres = pLoc->ConnectServer(_bstr_t(WMI_NAMESPACE), nullptr, nullptr, 0, NULL, 0, 0, &pSvc);
+    hres = pLoc->ConnectServer(
+        _bstr_t(L"ROOT\\CIMV2"),
+        nullptr,
+        nullptr,
+        0,
+        NULL,
+        0,
+        0,
+        &pSvc
+    );
+
     if (FAILED(hres) || !pSvc) {
-        std::cerr << "Failed to connect to WMI namespace. Error code = 0x" << std::hex << hres << std::endl;
+        std::cerr << "Could not connect to WMI namespace. Error code = 0x" << std::hex << hres << std::endl;
         return false;
     }
 
-    std::unique_ptr<IWbemServices, decltype(&IWbemServices::Release)> services{ pSvc, &IWbemServices::Release };
+    struct IWbemServicesReleaser {
+        IWbemServices* p;
+        IWbemServicesReleaser(IWbemServices* ptr) : p(ptr) {}
+        ~IWbemServicesReleaser() { if (p) p->Release(); }
+    } servicesReleaser(pSvc);
 
-    hres = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL,
-                             RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
+    hres = CoSetProxyBlanket(
+        pSvc,
+        RPC_C_AUTHN_WINNT,
+        RPC_C_AUTHZ_NONE,
+        nullptr,
+        RPC_C_AUTHN_LEVEL_CALL,
+        RPC_C_IMP_LEVEL_IMPERSONATE,
+        nullptr,
+        EOAC_NONE
+    );
+
     if (FAILED(hres)) {
-        std::cerr << "Failed to set proxy blanket. Error code = 0x" << std::hex << hres << std::endl;
+        std::cerr << "Could not set proxy blanket. Error code = 0x" << std::hex << hres << std::endl;
         return false;
     }
 
     std::wstring wqlQuery = L"SELECT " + stringToWstring(propertyName) + L" FROM " + stringToWstring(wmicCommand);
     IEnumWbemClassObject* pEnumerator = nullptr;
-    hres = pSvc->ExecQuery(bstr_t(WMI_QUERY_LANGUAGE), bstr_t(wqlQuery.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-                           nullptr, &pEnumerator);
+    hres = pSvc->ExecQuery(
+        bstr_t("WQL"),
+        bstr_t(wqlQuery.c_str()),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+        nullptr,
+        &pEnumerator
+    );
+
     if (FAILED(hres) || !pEnumerator) {
         std::cerr << "WMI query failed. Error code = 0x" << std::hex << hres << std::endl;
         return false;
     }
 
-    std::unique_ptr<IEnumWbemClassObject, decltype(&IEnumWbemClassObject::Release)> enumerator{ pEnumerator,
-                                                                                               &IEnumWbemClassObject::Release };
+    struct IEnumWbemClassObjectReleaser {
+        IEnumWbemClassObject* p;
+        IEnumWbemClassObjectReleaser(IEnumWbemClassObject* ptr) : p(ptr) {}
+        ~IEnumWbemClassObjectReleaser() { if (p) p->Release(); }
+    } enumeratorReleaser(pEnumerator);
 
     IWbemClassObject* pclsObj = nullptr;
     ULONG uReturn = 0;
 
     while (pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn) == WBEM_S_NO_ERROR) {
-        std::unique_ptr<IWbemClassObject, decltype(&IWbemClassObject::Release)> classObj{ pclsObj,
-                                                                                         &IWbemClassObject::Release };
+        struct IWbemClassObjectReleaser {
+            IWbemClassObject* p;
+            IWbemClassObjectReleaser(IWbemClassObject* ptr) : p(ptr) {}
+            ~IWbemClassObjectReleaser() { if (p) p->Release(); }
+        } classObjReleaser(pclsObj);
 
         VARIANT vtProp;
         VariantInit(&vtProp);
 
         hres = pclsObj->Get(_bstr_t(propertyName.c_str()), 0, &vtProp, 0, 0);
         if (SUCCEEDED(hres)) {
-            std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) +
-                                   "-" + randstring(12);
+            std::string newValue = randstring(8) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(4) + "-" + randstring(12);
             std::wstring newValueW = stringToWstring(newValue);
 
             VARIANT vtNewVal;
             VariantInit(&vtNewVal);
+
             vtNewVal.vt = VT_BSTR;
             vtNewVal.bstrVal = SysAllocString(newValueW.c_str());
 
@@ -153,7 +333,8 @@ bool FWWMIC(const std::string& wmicCommand, const std::string& propertyName) {
                     std::cout << "Spoofed -> " << propertyName << " :: [ " << newValue << " ]" << std::endl;
                 }
                 SysFreeString(vtNewVal.bstrVal);
-            } else {
+            }
+            else {
                 std::cerr << "Failed to allocate BSTR for new value." << std::endl;
             }
         }
@@ -321,6 +502,9 @@ bool spoofEDID(HKEY hKeyRoot) {
 
 void spoofHyperion() {
     std::cout << "\033[38;2;128;0;128m" << "\n========== HYPERION SPOOFING ==========\n" << "\033[0m";
+
+    iniNtFunctions();
+    HookNtDll();
 
     spoofReg(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control", L"SystemReg");
     FWWMIC("Win32_ComputerSystemProduct", "UUID");

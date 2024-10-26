@@ -5,6 +5,24 @@
 #include "../Header/MAC.hxx"
 #include "../Util/Utils.hxx"
 
+#include <windows.h>
+#include <winsock2.h>
+#include <iphlpapi.h>
+#include <setupapi.h>
+#include <comdef.h>
+#include <Wbemidl.h>
+#include <sddl.h>
+
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <vector>
+
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "setupapi.lib")
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "wbemuuid.lib")
+
 std::string rMAC() {
     std::stringstream newMac;
     newMac << std::hex << std::setw(2) << std::setfill('0') << ((rand() % 0xFF) & 0xFE);
@@ -286,7 +304,7 @@ void spoofMac() {
         if (!enableNetworkAdapter(wAdapterName)) {
             std::cerr << "Failed to re-enable network adapter: " << adapter << std::endl;
         }
-        
+
         std::cout << "Spoofed -> " << adapter << " - New MAC :: [ " << randomMac << " ]" << std::endl;
     }
 }

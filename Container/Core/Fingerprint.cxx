@@ -9,6 +9,18 @@
 #include "../Util/Utils.hxx"
 #include "../Util/StringEncryption.hxx"
 
+#include <Windows.h>
+#include <string>
+#include <intrin.h>
+#include <cctype>
+#include <Lmcons.h>
+#include <map>
+#include <random>
+#include <fstream>
+#include <filesystem>
+#include <memory>
+#include <iostream>
+
 #pragma comment(lib, "ntdll.lib")
 
 template <typename I>

@@ -9,13 +9,15 @@ TITAN Softwork Solutions © 2024
 ![TITAN Spoofer](./Images/POST.png)
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
 
-**[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) and cookies on your PC to evade Hyperion's detection vecs & Roblox's ban API.
+# 📜 Context
 
-Recently, Roblox introduced it's ban API & combined it with Hyperion's detection vectors, after seeing executor developers create paid spoofers I decided to do the exploiting community a favour & make a free one.
+**[TITAN's](https://discord.gg/yUWyvT9JyP)** Spoofer is a tool designed to spoof various hardware identifiers (HWIDs) on your PC to evade Hyperion's (Byfron) detection vectors & Roblox's ban API.
+
+Recently, Roblox introduced it's ban API & combined it with Hyperion's (Byfron) detection vectors, after seeing executor developers create paid spoofers I decided to do the exploiting community a favour & make a free one.
 
 The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. You get the idea (Hopefully)
 
-# 🔭  What does it do?
+# 💎 Features
 
 - 👥 **Ban API & Alt Detection evasion**: Using this gives your PC a whole new identitiy, Roblox will have no idea your alts & main are linked.
 - 🔐 **Hyperion/HWID Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
@@ -25,10 +27,7 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 
 # 📈 Version History
 
-### V5.1 > V6
-
-- No crazy changes, last update until Hyperion changes something. Happy exploiting <3
-- Added pre-com initialization check
+I've forgotten what I've changed recently due to this being taken down for so long. Currently on version 6.2
 
 <details>
   <summary>🔽 View V5 > V5.1 Changes</summary>
@@ -52,15 +51,13 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 
 # 📦 Installation & Setup
 
-Prefer not to compile the code yourself? **[Download the binaries from TITAN's Discord](https://discord.gg/yUWyvT9JyP).**
+Prefer not to compile the code yourself? **[Download the exe from TITAN's Discord](https://discord.gg/yUWyvT9JyP).**
 
 ### 📚 Requirements
 
-Visual Studio's C++ building tools
+Visual Studio & It's C++ build tools
 
 ### 🖥️ Guide
-
-Otherwise, follow the steps below:
 
 1. **Clone the Repository**
 
@@ -71,14 +68,14 @@ Otherwise, follow the steps below:
 
 2. **Open the Solution File (.sln)**
 
-    - Launch **Visual Studio** (ensure it's the correct version).
-    - Navigate to the cloned repository directory.
-    - Open `TITAN Spoofer.sln`.
+    - Open the cloned repository directory.
+    - Open `TITAN Spoofer.sln` in Visual Studio.
 
 3. **Build the Project**
 
-    - In Visual Studio, go to `Build` > `Build Solution`.
-    - The compiled binaries will be located in the `/x64` directory.
+    - First, set the compilation type to Release.
+    - Then, click Build Solution.
+    - The compiled binarie (exe) will be located in the `/x64` directory.
 
 **Usage Reminder:**
 - Spoof after exploiting and before returning to your main account.
@@ -86,34 +83,9 @@ Otherwise, follow the steps below:
 
 <br>
 
-# 🌐 Additional Information
-
-**Hyperion** is Roblox's Anti-Tamper, owned by Byfron, owned by Roblox.
-
-### Components:
-
-1. **TITAN Spoofer.exe**
-   - Features a Command Line Interface (CLI) navigated w arrow keys.
-   - Option to clear your Roblox cookie cache.
-
-2. **TITAN Spoofer THEMIDA.exe**
-   - A protected version of TITAN Spoofer.
-
-3. **Cache Cleaner**
-   - If the cache cleaner in `TITAN Spoofer.exe` fails, use `Python/CookieCacheCleaner.py` to auto clear the Roblox cookie cache.
-
-<br>
-
-# 🎓 Credits
-
-- **Developer:** Damon
-- **Contributors:** H8, bstaipan, .ranu
-
-<br>
-
 # 🎟️ Get Support
 
-Join our [Discord Community](https://discord.gg/yUWyvT9JyP) for support, updates, and to connect with other users.
+Join the [Discord Community](https://discord.gg/yUWyvT9JyP) for support, updates, and to connect with other users.
 
 ![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
 
