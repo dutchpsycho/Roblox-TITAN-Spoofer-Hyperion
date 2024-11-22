@@ -1,109 +1,33 @@
-/*
-* @Author Damon (Swedish.Psych0)
-* @License TITAN © 2024 by Damon under CC BY-NC-ND 4.0
-* @Namespace TITAN
-* @Version 6.1.0
-*/
+// TITAN Spoofer V1.0
+// Licensed under CC BY-NC-ND 4.0
+// Developed by TITAN
+// TITAN Softworks EST. 2024
+// DOU: 2024-11-22
 
-/*
-* If you want to use headless mode, you need to do a couple things.
-* First, right click the project (right side, TITAN Spoofer)
-* Second, click Linker dropdown & click advanced. change entry point to "MainCRTStartup"
-* Third, click system and click the dropdown and switch it to "SUBSYSTEM::WINDOWS"
-* Finally, uncomment "//#define HEADLESS"
-*/
+// side note; I'm fairly new to C++ and this is one of the first projects I've tried to optimize.
+// this is around 75% faster than the old codebase, If I multi-threaded it it'd be much much faster
+// but that's all overkill anyway...
 
-// #define HEADLESS
-
-#include "./Container/Header/Hyperion.hxx"
-#include "./Container/Header/Fingerprint.hxx"
-#include "./Container/Header/Roblox.hxx"
-#include "./Container/Header/MAC.hxx"
-#include "./Container/Util/Elevate.hxx"
-#include "./Container/Util/Utils.hxx"
-
-#ifdef HEADLESS
-
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    Elevate();
-    SigFucker();
-    ClearRoblox();
-    spoofMac();
-    spoofHyperion();
-    return 0;
-}
-
-#else
+#include "Container/Services/Services.hpp"
+#include "Container/Header/FsCleaner.h"
+#include "Container/Header/Mac.h"
+#include "Container/Header/Registry.h"
+#include "Container/Header/WMI.h"
 
 int main() {
-    try {
-        std::string windowTitle = randstring(24);
-        SetConsoleTitleA(windowTitle.c_str());
-        SigFucker();
-        TITAN();
-        Elevate();
-        int choice = 0;
-        while (true) {
-            system("CLS");
-            TITAN();
-            Menu(choice);
-            int key = _getch();
-            if (key == 13) {
-                ClearRoblox();
-                spoofMac();
-                spoofHyperion();
-                std::cout << std::endl;
-                Colour(10); std::cout << "Op finished, sry Byfron not today ;3" << std::endl;std::cout << std::endl;Colour(7);
-                system("pause");
-                break;
-            }
-        }
-    }
-    catch (const std::exception& ex) {
-        std::cerr << "Error: " << ex.what() << std::endl;
-        system("pause");
-    }
-    system("pause");
+    Services::TITAN();
+
+    Services::KillRbx();
+
+    FsCleaner::run();
+    MAC::MacSpoofer::run();
+    Registry::RegSpoofer::run();
+    WMI::WmiSpoofer::run();
+
+    std::cout << "\nAll done :3 Bye Bye Hyperion :mog: \n";
+
+    // if you want to run this on startup, or dont want to have to close the window, comment below out
+    std::cin.get();
+
     return 0;
 }
-
-#endif
-
-// WITH FINGERPRINT SPOOFING, THIS FUCKS WITH UR BIOS AND SYSTEM. DO NOT USE IF YOU USE WAVE/SYNZ
-/*
-int main() {
-    try {
-        srand(static_cast<unsigned int>(time(nullptr)));
-        std::string windowTitle = rands(24);
-        SetConsoleTitleA(windowTitle.c_str());
-        SigFucker();
-        TITAN();
-        Elevate();
-        int choice = 0;
-        while (true) {
-            system("CLS");
-            TITAN();
-            Menu(choice);
-            int key = _getch();
-            if (key == 13) {
-                std::unique_ptr<SystemFingerprint> fingerprint;
-                ClearRoblox();
-                spoofMac();
-                spoofHyperion();
-                fingerprint = SystemFingerprint::CreateUniqueFingerprint();
-                std::cout << "Spoofed Fingerprint Successfully :: [ " << fingerprint->ToString() << " ]\n" << std::endl;
-                _ps("Operation Finished Successfully, no restart required.", 10);
-                system("pause");
-                break;
-            }
-        }
-    }
-    catch (const std::exception& ex) {
-        std::cerr << "Error: " << ex.what() << std::endl;
-        system("pause");
-    }
-    system("pause");
-    return 0;
-}
-#endif
-*/
