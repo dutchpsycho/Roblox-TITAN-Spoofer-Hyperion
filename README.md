@@ -25,6 +25,10 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 
 <br>
 
+# Disclaimer 🚨
+
+This won't unban you if your Roblox account is banned, that's handled server-side nothing I can do about that. This also won't get you unbanned from Roblox games, however it will get rid of any ban traces and allow you to work around Ban API if used correctly.
+
 # 📈 Version History
 
 Previous versions are irrelevant, I've fully rewritten this project as of Novemember 2024. In future (Hyperion V5) this project will be updated.
