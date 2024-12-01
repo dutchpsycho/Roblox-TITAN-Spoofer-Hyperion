@@ -227,7 +227,7 @@ namespace Services {
     inline void KillRbx() {
         SetWindow();
 
-        const std::wstring_view names[] = { L"RobloxPlayerBeta.exe", L"RobloxCrashHandler.exe" };
+        const std::wstring_view names[] = { L"RobloxPlayerBeta.exe", L"RobloxCrashHandler.exe", L"Bloxstrap.exe" };
         const std::wstring_view titles = L"Roblox";
 
         auto NtTerminateProcess = GetNtTerminateProcess();
