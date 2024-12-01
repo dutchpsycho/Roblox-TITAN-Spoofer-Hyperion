@@ -21,12 +21,12 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 
 - 👥 **Ban API & Alt Detection evasion**: Using this clears any previous identities Roblox had on you, meaning any account you launch now is brand new in Roblox eyes.
 - 🔐 **Hyperion/HWID Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
-- ♻️ **Fully automatic Roblox Reinstall**: Uses Bloxstrap or RobloxPlayerInstaller.exe to reinstall Roblox without the hassle.
-- 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban guide exists within the official TITAN Discord.
+- ♻️ **Fully automatic Roblox Reinstall**: Uses Bloxstrap or RobloxPlayerInstaller.exe to reinstall Roblox.
+- 📖 **Complete Anti-Ban Bible**: A complete Anti-Ban guide exists within the official TITAN Discord.
 
 <br>
 
-# Disclaimer 🚨
+# Disclaimer ⚠️
 
 This won't unban you if your Roblox account is banned, that's handled server-side nothing I can do about that. This also won't get you unbanned from Roblox games, however it will get rid of any ban traces and allow you to work around Ban API if used correctly.
 
@@ -86,7 +86,7 @@ Essentially the same thing as spoofer, but you can customize the process, if thi
     TitanThread.join();
 ```
 
-### 🔧 Options
+### 🔧 DevOpts
 
 **Function: `TitanSpoofer::run(bool logs)`**
 
