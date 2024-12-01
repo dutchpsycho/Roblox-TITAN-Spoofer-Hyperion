@@ -2,6 +2,16 @@
 
 namespace fs = std::filesystem;
 
+std::string userprofile() {
+    char* user_profile = nullptr;
+    size_t size = 0;
+    if (_dupenv_s(&user_profile, &size, "USERPROFILE") != 0 || user_profile == nullptr) {
+        throw std::runtime_error("failed to get USERPROFILE");}
+    std::string userProfileStr(user_profile);
+    free(user_profile);
+    return userProfileStr;
+}
+
 void FsCleaner::run() {
     Services::SectHeader("File System Cleaning", 202);
 
@@ -88,17 +98,12 @@ bool FsCleaner::cleanVers() {
     };
     bool cleaned = false;
 
-    auto process = [&](const fs::path& baseDir) {
+    auto process = [&](const fs::path& baseDir, bool isBloxstrap) {
         if (!fs::exists(baseDir) || !fs::is_directory(baseDir)) return;
 
-        for (const auto& verDir : fs::directory_iterator(baseDir)) {
-            if (!fs::is_directory(verDir)) continue;
-
-            const auto& dir = verDir.path().filename().string();
-            if (!dir.starts_with("version-")) continue;
-
+        if (isBloxstrap) {
             for (const auto& file : toDel) {
-                const fs::path filePath = verDir.path() / file;
+                const fs::path filePath = baseDir / file;
                 retry([&]() {
                     if (fs::exists(filePath)) {
                         fs::remove(filePath);
@@ -108,17 +113,42 @@ bool FsCleaner::cleanVers() {
                     }, filePath);
             }
         }
+        else {
+            for (const auto& verDir : fs::directory_iterator(baseDir)) {
+                if (!fs::is_directory(verDir)) continue;
+
+                const auto& dir = verDir.path().filename().string();
+
+                if (dir.starts_with("version-")) {
+                    for (const auto& file : toDel) {
+                        const fs::path filePath = verDir.path() / file;
+                        retry([&]() {
+                            if (fs::exists(filePath)) {
+                                fs::remove(filePath);
+                                std::cout << "Deleted -> " << filePath << std::endl;
+                                cleaned = true;
+                            }
+                            }, filePath);
+                    }
+                }
+            }
+        }
         };
 
     for (const auto& drive : fs::directory_iterator("/")) {
         if (!drive.is_directory()) continue;
 
+        const fs::path user = userprofile();
+
         const fs::path path = drive.path() / "Program Files" / "Roblox" / "Versions";
         const fs::path pathx86 = drive.path() / "Program Files (x86)" / "Roblox" / "Versions";
+        const fs::path bloxstrapPath = user / "AppData" / "Local" / "Bloxstrap" / "Roblox" / "Player";
 
-        process(path);
-        process(pathx86);
+        process(path, false);
+        process(pathx86, false);
+        process(bloxstrapPath, true);
     }
+
     return cleaned;
 }
 

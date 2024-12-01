@@ -7,6 +7,7 @@
 #include "Container/Header/Mac.h"
 #include "Container/Header/Registry.h"
 #include "Container/Header/WMI.h"
+#include "Container/Header/Installer.h"
 
 
 /**
@@ -40,6 +41,8 @@ namespace TitanSpoofer {
             MAC::MacSpoofer::run();
             Registry::RegSpoofer::run();
             WMI::WmiSpoofer::run();
+
+            Installer::run();
 
             if (!logs) {
                 reOut();
