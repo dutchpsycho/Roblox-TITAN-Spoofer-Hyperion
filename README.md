@@ -2,48 +2,44 @@
 
 TITAN Softwork Solutions © 2024
 
+![TITAN Spoofer](./Images/Start.png)
+![TITAN Spoofer](./Images/End.png)
+
 ![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)
 ![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
 
-![TITAN Spoofer](./Images/Start.png)
-![TITAN Spoofer](./Images/End.png)
 ![TITAN Spoofer](./Images/TITAN%20(Custom).png)
 
 # 📜 Context
 
-**[TITAN's](https://titansoftwork.net/)** Spoofer is a tool designed to prevent you from being banned when using executors on Web Roblox.
+**[TITAN's](https://titansoftwork.net/)** Spoofer is a tool designed to prevent you from being banned while exploiting on Windows/Web Roblox.
 
 Recently, Roblox introduced it's ban API & combined it with Hyperion's (Byfron) detection vectors, after seeing executor developers create paid spoofers I decided to do the exploiting community a favour & make a free one.
 
-The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. You get the idea (Hopefully)
+The idea is to spoof after you've exploited, before you go back onto your main. Once you're done with your main & wanna exploit again, spoof. Simple.
 
 # 💎 Features
 
-- 👥 **Ban API & Alt Detection evasion**: Using this clears any previous identities Roblox had on you, meaning any account you launch now is brand new in Roblox eyes.
-- 🔐 **Hyperion/HWID Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
-- 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban guide exists within the official TITAN Discord.
+- 👥 **Ban API Evasion**: Using this gives your PC a "clean slate".
+- ♻️ **Fully automatic Roblox Reinstall**: Uses Bloxstrap or RobloxPlayerInstaller.exe to reinstall Roblox.
+- ⚖️ **Hyperion/HWID Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
+- 📖 **Complete Anti-Ban Bible**: A complete Anti-Ban guide exists within the official TITAN Discord.
 
 <br>
 
-# Disclaimer 🚨
+# Disclaimer ⚠️
 
-This won't unban you if your Roblox account is banned, that's handled server-side nothing I can do about that. This also won't get you unbanned from Roblox games, however it will get rid of any ban traces and allow you to work around Ban API if used correctly.
-
-<br>
-
-# 📈 Version History
-
-Previous versions are irrelevant, I've fully rewritten this project as of Novemember 2024. In future (Hyperion V5) this project will be updated.
+This WILL NOT unban you if your Roblox account is banned ONSITE, that's handled server-side there's nothing I can do about that. This also applies to Roblox games.
 
 <br>
 
 # 📦 Installation & Setup
 
-Prefer not to compile the code yourself? **[Download the exe from TITAN's Discord](https://titansoftwork.net).**
-
+Don't want to compile? **[Download the exe from the Discord](https://titansoftwork.net).**
+ 
 ### 📚 Requirements
 
-Visual Studio & It's C++ build tools
+Visual Studio & C++ build tools from Visual Studio Installer
 
 ### 🖥️ Guide
 
@@ -64,25 +60,13 @@ Visual Studio & It's C++ build tools
     - Click build solution
     - The compiled binarie (exe) will be located in the `/Release` directory.
 
-**Usage Reminder:**
-- Spoof after exploiting and before returning to your main account.
-- Repeat spoofing before each new exploit session.
-
 <br>
-
-here’s the updated guide with more details for developers, specifically about using the `TITAN.h` file in their projects:
-
----
 
 # 🔱 For Developers
 
-### What’s Provided in `TITAN.h`
+### `TITAN.h`
 
-I've included TITAN.h for you to use. It's modular & can be integrated with logging or without, single threaded or multi & is extremely flexible with what to spoof.
-
-### What does it do?
-
-Essentially the same thing as spoofer, but you can customize the process, if this is for your executor I'd reccomend running it before Roblox opens, unless you want to kill Roblox or disable the file system cleaning.
+I've included TITAN.h for you to include in your software. Each spoof vector can be toggled, console logging also toggleable, its all up to you.
 
 #### Example Integration
 
@@ -95,13 +79,11 @@ Essentially the same thing as spoofer, but you can customize the process, if thi
     TitanThread.join();
 ```
 
----
-
 ### 🔧 Options
 
 **Function: `TitanSpoofer::run(bool logs)`**
 
-- **Parameters:**
+- **Params:**
   - `logs` (`true`/`false`): Controls whether logging is enabled. If `false`, suppresses all `std::cout` output except errors.
 - **Return Value:** A `std::thread` object that executes the spoofing process.
 

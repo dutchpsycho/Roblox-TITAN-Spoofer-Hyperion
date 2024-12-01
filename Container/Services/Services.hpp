@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Defs.h"
 
@@ -275,30 +275,44 @@ namespace Services {
             << "\033[0m";
     }
 
+#pragma warning(disable : 4566)
+
     inline void TITAN() {
         std::string art = R"(
-                                dMb,
-                            ,dMMMMb,          ,,
-                            ,dMMMMMMMMMb, eeee8888"
-                        ,mMMm!!!!XXXXMMMMM"""
-                    ,d!!XXMMXX88888888W"
-                    `MX88dMM8888WWWMMMMMMb,
-                        '""MMMMMMMMMMMMMMMMb
-                            MMMMMMMMMMMMMMMMMMb,
-                        dMMMMMMMMMMMMMMMMMMMMb,,
-            _,dMMMMMMMMMMXXXX!!!!!!!!!!!!!!XXXXXMP
-        _,dMMXX!!!!!!!!!!!!!!!!!!XXXXX888888888WWC
-    _,dMMX!!!MMMM!!!!!!!!XXXXXX888888888888WWMMMMMb,
-    dMMX!!!!!MMM!XXXXXX88888888888888888WWMMMMMMMMMMMb
-    dMMXXXXXX8MMMM88888888888888888WWWMMMMMMMMMMMMMMMMMb    ,d8
-    MMMMWW888888MMMMM8888888WWMMMMMMMMMMMMMMMMMMMMMMMMMMM,d88P'
-    YMMMMMWW888888WWMMMMMMMMMMP"""'    `"YMMMMMMMMMMMXMMMMMP
-        `""YMMMMMMMMMMMMMP""'            mMMMm!XXXXX8888888e,
-                                    ,d!!XXMM888888888888WW
-Swedish.Psycho                     "MX88dMM888888WWWMMMMMMb
-TITAN Spoofer V1.0                      """```"YMMMMMMMYMMM
-Hyperion: 'New phone, who dis?                    `"YMMMMM
-https://github.com/dutchpsycho/                     `"YMP
+       ++x                                             +++x              
+        +;++x           TITAN Spoofer V1.1          +++;+x               
+         +;;;;++          Swedish.Psycho         +++;;;++                
+         +;::::;;++                           ++;;;;;;;+                 
+          +:::::::;; ++                   ++x;;:::::::+                  
+          +;:::::::;  ++++             x++++ ;;::::::;+                  
+           +;::::::;;  ;;;;++       ++;;;;; x;:::::::+                   
+           +;::::::;;  +;::::;;   ;;::::;+  ;;::::::;+                   
+            +:::::::;  +;:::::;   ;:::::;+  ;;::::::++                   
+            +;::::::;;  ;:::::;   ;:::::;+  ;::::::;+                    
+             +::::::;;  ;;::::;x  ;:::::;  ;;::::::++                    
+             +;:::::;+  +;::::;+  ;::::;;  ;;:::::;+                     
+              ;::::::;  +;::::;+  ;::::;+  +::::::;+                     
+              +;:::::;  ;;::::;;  ;::::;+  ;:::::++                      
+                +;:::;  +;::::;; x;::::;;  ;::::+                        
+                 +;::;;  ;::::;; +;::::;;  ;::;+                         
+                  +;:;;  ;;:::;; +;::::;  ;;:;+                          
+                    +;;  ;;:::;; ;;:::;;  ;;+                            
+                     x;+ ;;:::;; ;;:::;;  ;+                             
+                         +;:::;; ;;:::;+                                 
+                          ;:::;; ;;:::;+                                 
+                          ;;::;; ;;:::;                                  
+                          ;;::;; ;;:::;                                  
+                          ;:::;; ;;:::;+                                 
+                          +;:::; ;::::+                                  
+                          ++:::;x;:::;+                                  
+                           +;:::;;::;+                                   
+                            +;::;;;;+                                    
+                             ;;;;;;;+                                    
+                             +;;;;;+                                     
+                              +;;;+                                      
+                               +;;x                                      
+                               +;+                                       
+                                +                                        
     )";
         std::cout << art;
     }
