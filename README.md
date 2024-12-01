@@ -21,6 +21,7 @@ The idea is to spoof after you've exploited, before you go back onto your main. 
 
 - 👥 **Ban API & Alt Detection evasion**: Using this clears any previous identities Roblox had on you, meaning any account you launch now is brand new in Roblox eyes.
 - 🔐 **Hyperion/HWID Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
+- ♻️ **Fully automatic Roblox Reinstall**: Uses Bloxstrap or RobloxPlayerInstaller.exe to reinstall Roblox without the hassle.
 - 📚 **Complete Anti-Ban Bible**: A complete Anti-Ban guide exists within the official TITAN Discord.
 
 <br>
@@ -31,19 +32,13 @@ This won't unban you if your Roblox account is banned, that's handled server-sid
 
 <br>
 
-# 📈 Version History
-
-Previous versions are irrelevant, I've fully rewritten this project as of Novemember 2024. In future (Hyperion V5) this project will be updated.
-
-<br>
-
 # 📦 Installation & Setup
 
 Prefer not to compile the code yourself? **[Download the exe from TITAN's Discord](https://titansoftwork.net).**
 
 ### 📚 Requirements
 
-Visual Studio & It's C++ build tools
+Visual Studio & C++ build tools from VS Installer
 
 ### 🖥️ Guide
 
@@ -70,10 +65,6 @@ Visual Studio & It's C++ build tools
 
 <br>
 
-here’s the updated guide with more details for developers, specifically about using the `TITAN.h` file in their projects:
-
----
-
 # 🔱 For Developers
 
 ### What’s Provided in `TITAN.h`
@@ -94,8 +85,6 @@ Essentially the same thing as spoofer, but you can customize the process, if thi
     // wait 4 completion
     TitanThread.join();
 ```
-
----
 
 ### 🔧 Options
 
