@@ -23,6 +23,8 @@ void Installer::Initialize() {
         return;
     }
 
+    bool actionTaken = false;
+
     for (const auto& drive : drives) {
         const std::string path = drive + "\\Users\\" + user;
         const std::string blxpath = path + "\\AppData\\Local\\Bloxstrap";
@@ -31,17 +33,21 @@ void Installer::Initialize() {
         if (BloxstrapExists(blxpath)) {
             std::cout << "Found Bloxstrap on " << drive << ", using that to reinstall..." << std::endl;
             openFile(blxpath + "\\Bloxstrap.exe");
-            return;
+            actionTaken = true;
+            continue;
         }
 
         if (InstallerExists(downloads)) {
             std::cout << "Found Roblox Installer on " << drive << ", using that to reinstall..." << std::endl;
             openFile(downloads + "\\RobloxPlayerInstaller.exe");
-            return;
+            actionTaken = true;
+            continue;
         }
     }
 
-    None();
+    if (!actionTaken) {
+        None();
+    }
 }
 
 bool Installer::BloxstrapExists(const std::string& path) {
@@ -81,7 +87,7 @@ std::vector<std::string> Installer::getAllDrives() {
         char* drive = driveStrings;
         while (*drive) {
             if (GetDriveTypeA(drive) == DRIVE_FIXED) {
-                drives.emplace_back(std::string(drive).substr(0, 2)); // Get the drive letter (e.g., "C:")
+                drives.emplace_back(std::string(drive).substr(0, 2));
             }
             drive += strlen(drive) + 1;
         }
