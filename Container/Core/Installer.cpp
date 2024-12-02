@@ -10,28 +10,35 @@ void Installer::run() {
 }
 
 void Installer::Initialize() {
-    const std::string user = getUserProfile();
-    const std::string drive = getDrive();
+    const std::vector<std::string> drives = getAllDrives();
 
+    if (drives.empty()) {
+        None();
+        return;
+    }
+
+    const std::string user = getUserProfile();
     if (user.empty()) {
         None();
         return;
     }
 
-    const std::string path = drive + "\\Users\\" + user;
-    const std::string blxpath = path + "\\AppData\\Local\\Bloxstrap";
-    const std::string downloads = path + "\\Downloads";
+    for (const auto& drive : drives) {
+        const std::string path = drive + "\\Users\\" + user;
+        const std::string blxpath = path + "\\AppData\\Local\\Bloxstrap";
+        const std::string downloads = path + "\\Downloads";
 
-    if (BloxstrapExists(blxpath)) {
-        std::cout << "Found Bloxstrap, using that to reinstall..." << std::endl;
-        openFile(blxpath + "\\Bloxstrap.exe");
-        return;
-    }
+        if (BloxstrapExists(blxpath)) {
+            std::cout << "Found Bloxstrap on " << drive << ", using that to reinstall..." << std::endl;
+            openFile(blxpath + "\\Bloxstrap.exe");
+            return;
+        }
 
-    if (InstallerExists(downloads)) {
-        std::cout << "Found Roblox Installer, using that to reinstall..." << std::endl;
-        openFile(downloads + "\\RobloxPlayerInstaller.exe");
-        return;
+        if (InstallerExists(downloads)) {
+            std::cout << "Found Roblox Installer on " << drive << ", using that to reinstall..." << std::endl;
+            openFile(downloads + "\\RobloxPlayerInstaller.exe");
+            return;
+        }
     }
 
     None();
@@ -65,12 +72,21 @@ std::string Installer::getUserProfile() {
     return "";
 }
 
-std::string Installer::getDrive() {
-    char drive[4] = { 0 };
-    if (GetEnvironmentVariableA("SystemDrive", drive, sizeof(drive)) == 0) {
-        return "C:";
+std::vector<std::string> Installer::getAllDrives() {
+    std::vector<std::string> drives;
+    char driveStrings[256];
+    DWORD length = GetLogicalDriveStringsA(sizeof(driveStrings), driveStrings);
+
+    if (length > 0) {
+        char* drive = driveStrings;
+        while (*drive) {
+            if (GetDriveTypeA(drive) == DRIVE_FIXED) {
+                drives.emplace_back(std::string(drive).substr(0, 2)); // Get the drive letter (e.g., "C:")
+            }
+            drive += strlen(drive) + 1;
+        }
     }
-    return std::string(drive);
+    return drives;
 }
 
 // idk how to open a file w args thru shell so deal w it
