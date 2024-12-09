@@ -6,6 +6,7 @@
 #include <TlHelp32.h>
 
 #include <string>
+#include <chrono>
 #include <random>
 #include <sstream>
 #include <iomanip>
@@ -45,6 +46,14 @@ namespace Services {
             rUser.push_back(chars[dist(gen)]);
         }
         return rUser;
+    }
+
+    inline std::wstring genUsers() {
+        constexpr std::wstring_view users[] = {
+            L"Operator", L"Admin", L"Administrator", L"OP"
+        };
+        std::uniform_int_distribution<size_t> dist(0, std::size(users) - 1);
+        return std::wstring(users[dist(gen)]);
     }
 
     inline std::string genMac() {
@@ -91,6 +100,45 @@ namespace Services {
         return serialNumber;
     }
 
+    inline std::wstring genBaseBoardManufacturer() {
+        constexpr std::wstring_view manufacturers[] = {
+            L"ASUSTeK COMPUTER INC.", L"MSI", L"Gigabyte Technology Co., Ltd.", L"Dell Inc.", L"Hewlett-Packard"
+        };
+        std::uniform_int_distribution<size_t> dist(0, std::size(manufacturers) - 1);
+        return std::wstring(manufacturers[dist(gen)]);
+    }
+
+    inline std::wstring genSystemManufacturer() {
+        constexpr std::wstring_view manufacturers[] = {
+            L"Dell Inc.", L"Lenovo", L"Hewlett-Packard", L"ASUSTeK COMPUTER INC.", L"Acer Inc.", L"MSI", L"Samsung Electronics"
+        };
+        std::uniform_int_distribution<size_t> dist(0, std::size(manufacturers) - 1);
+        return std::wstring(manufacturers[dist(gen)]);
+    }
+
+    inline std::wstring genBIOSVersion() {
+        std::uniform_int_distribution<int> majorDist(1, 9);
+        std::uniform_int_distribution<int> minorDist(0, 9);
+        std::uniform_int_distribution<int> patchDist(0, 9);
+
+        std::wstringstream ss;
+        ss << majorDist(gen) << L"." << minorDist(gen) << L"." << patchDist(gen);
+        return ss.str();
+    }
+
+    inline std::wstring genBIOSReleaseDate() {
+        auto now = std::chrono::system_clock::now();
+        auto daysBack = std::uniform_int_distribution<int>(0, 365 * 5)(gen);
+        auto randomDate = now - std::chrono::days(daysBack);
+        auto timeT = std::chrono::system_clock::to_time_t(randomDate);
+        std::tm timeStruct;
+        localtime_s(&timeStruct, &timeT);
+
+        std::wstringstream ss;
+        ss << std::put_time(&timeStruct, L"%Y-%m-%d");
+        return ss.str();
+    }
+
     inline std::wstring genEDID() {
         std::uniform_int_distribution<int> dist(0, 0xFFFF);
         std::uniform_int_distribution<int> uidDist(10000, 99999);
@@ -120,41 +168,41 @@ namespace Services {
 
     // NTDLL
 
-    static HMODULE GetNtdll() {
+    static HMODULE SeNtdll() {
         static HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
         return ntdll;
     }
 
-    static auto GetNtTerminateProcess() {
+    static auto SeTerminateProcess() {
         static auto NtTerminateProcess = reinterpret_cast<NTSTATUS(WINAPI*)(HANDLE, NTSTATUS)>(
-            GetProcAddress(GetNtdll(), "NtTerminateProcess")
+            GetProcAddress(SeNtdll(), "NtTerminateProcess")
             );
         return NtTerminateProcess;
     }
 
-    static auto GetNtOpenKey() {
+    static auto SeOpenKey() {
         static auto NtOpenKey = reinterpret_cast<NTSTATUS(WINAPI*)(PHANDLE, ACCESS_MASK, POBJECT_ATTRIBUTES)>(
-            GetProcAddress(GetNtdll(), "NtOpenKey")
+            GetProcAddress(SeNtdll(), "NtOpenKey")
             );
         return NtOpenKey;
     }
 
-    static auto GetNtDeleteKey() {
+    static auto SeDeleteKey() {
         static auto NtDeleteKey = reinterpret_cast<NTSTATUS(WINAPI*)(HANDLE)>(
-            GetProcAddress(GetNtdll(), "NtDeleteKey")
+            GetProcAddress(SeNtdll(), "NtDeleteKey")
             );
         return NtDeleteKey;
     }
 
-    static auto GetNtClose() {
+    static auto SeClose() {
         static auto NtClose = reinterpret_cast<NTSTATUS(WINAPI*)(HANDLE)>(
-            GetProcAddress(GetNtdll(), "NtClose")
+            GetProcAddress(SeNtdll(), "NtClose")
             );
         return NtClose;
     }
 
     inline HANDLE OpenKey(const std::wstring_view& keyPath, ACCESS_MASK desiredAccess) {
-        auto NtOpenKey = GetNtOpenKey();
+        auto NtOpenKey = SeOpenKey();
         if (!NtOpenKey) return nullptr;
 
         UNICODE_STRING unicodeKeyPath = {};
@@ -170,7 +218,7 @@ namespace Services {
     }
 
     inline void CloseKey(HANDLE keyHandle) {
-        auto NtClose = GetNtClose();
+        auto NtClose = SeClose();
         if (!NtClose || !keyHandle) return;
 
         NtClose(keyHandle);
@@ -180,7 +228,7 @@ namespace Services {
         HANDLE keyHandle = OpenKey(keyPath, DELETE);
         if (!keyHandle) return false;
 
-        auto NtDeleteKey = GetNtDeleteKey();
+        auto NtDeleteKey = SeDeleteKey();
         if (!NtDeleteKey) {
             CloseKey(keyHandle);
             return false;
@@ -195,7 +243,7 @@ namespace Services {
     static auto GetNtQueryKey() {
         static auto NtQueryKey = reinterpret_cast<NTSTATUS(WINAPI*)(
             HANDLE, KEY_INFORMATION_CLASS, PVOID, ULONG, PULONG)>(
-                GetProcAddress(GetNtdll(), "NtQueryKey")
+                GetProcAddress(SeNtdll(), "NtQueryKey")
                 );
         return NtQueryKey;
     }
@@ -203,7 +251,7 @@ namespace Services {
     static auto GetNtSetValueKey() {
         static auto NtSetValueKey = reinterpret_cast<NTSTATUS(WINAPI*)(
             HANDLE, PUNICODE_STRING, ULONG, ULONG, const void*, ULONG)>(
-                GetProcAddress(GetNtdll(), "NtSetValueKey")
+                GetProcAddress(SeNtdll(), "NtSetValueKey")
                 );
         return NtSetValueKey;
     }
@@ -211,13 +259,38 @@ namespace Services {
     static auto GetNtEnumerateKey() {
         static auto NtEnumerateKey = reinterpret_cast<NTSTATUS(WINAPI*)(
             HANDLE, ULONG, KEY_INFORMATION_CLASS, PVOID, ULONG, PULONG)>(
-                GetProcAddress(GetNtdll(), "NtEnumerateKey")
+                GetProcAddress(SeNtdll(), "NtEnumerateKey")
                 );
         return NtEnumerateKey;
     }
 
 
     // HELPERS
+
+    inline bool EnableDebugPrivilege() {
+        HANDLE hToken;
+        TOKEN_PRIVILEGES tokenPrivileges = { 0 };
+
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+            return false;
+        }
+
+        if (!LookupPrivilegeValueW(nullptr, SE_DEBUG_NAME, &tokenPrivileges.Privileges[0].Luid)) {
+            CloseHandle(hToken);
+            return false;
+        }
+
+        tokenPrivileges.PrivilegeCount = 1;
+        tokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+        if (!AdjustTokenPrivileges(hToken, FALSE, &tokenPrivileges, sizeof(TOKEN_PRIVILEGES), nullptr, nullptr)) {
+            CloseHandle(hToken);
+            return false;
+        }
+
+        CloseHandle(hToken);
+
+        return GetLastError() == ERROR_SUCCESS;
+    }
 
     inline void SetWindow() {
         std::wstring rndName = rndWindName();
@@ -226,11 +299,12 @@ namespace Services {
 
     inline void KillRbx() {
         SetWindow();
+        EnableDebugPrivilege();
 
         const std::wstring_view names[] = { L"RobloxPlayerBeta.exe", L"RobloxCrashHandler.exe", L"Bloxstrap.exe" };
         const std::wstring_view titles = L"Roblox";
 
-        auto NtTerminateProcess = GetNtTerminateProcess();
+        auto NtTerminateProcess = SeTerminateProcess();
         if (!NtTerminateProcess) return;
 
         HWND hwnd = FindWindowW(nullptr, titles.data());
@@ -238,9 +312,10 @@ namespace Services {
             DWORD pid = 0;
             GetWindowThreadProcessId(hwnd, &pid);
             if (pid) {
-                HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                HANDLE hProcess = OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE, FALSE, pid);
                 if (hProcess) {
                     NtTerminateProcess(hProcess, 0);
+                    WaitForSingleObjectEx(hProcess, INFINITE, TRUE);
                     CloseHandle(hProcess);
                 }
             }
@@ -250,22 +325,59 @@ namespace Services {
         if (snapshot == INVALID_HANDLE_VALUE) return;
 
         PROCESSENTRY32W entry = { sizeof(PROCESSENTRY32W) };
+        std::vector<HANDLE> processHandles;
+
         if (Process32FirstW(snapshot, &entry)) {
             do {
                 for (const auto& target : names) {
                     if (target == entry.szExeFile) {
-                        HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);
+                        HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
                         if (hProcess) {
+                            if (std::wstring(entry.szExeFile) == L"RobloxPlayerBeta.exe") {
+                                HMODULE hNtdll = GetModuleHandleW(L"ntdll.dll");
+                                auto NtUnmapViewOfSection = (pNtUnmapViewOfSection)GetProcAddress(hNtdll, "NtUnmapViewOfSection");
+
+                                if (NtUnmapViewOfSection) {
+                                    MEMORY_BASIC_INFORMATION mbi = { 0 };
+                                    PVOID baseAddress = nullptr;
+
+                                    while (VirtualQueryEx(hProcess, baseAddress, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+                                        if (mbi.State == MEM_COMMIT && mbi.Type == MEM_IMAGE) {
+                                            NtUnmapViewOfSection(hProcess, mbi.BaseAddress);
+                                        }
+                                        baseAddress = reinterpret_cast<PVOID>(reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize);
+                                    }
+                                }
+                            }
                             NtTerminateProcess(hProcess, 0);
-                            CloseHandle(hProcess);
+                            processHandles.push_back(hProcess);
                         }
                     }
                 }
             } while (Process32NextW(snapshot, &entry));
         }
         CloseHandle(snapshot);
+
+        for (HANDLE hProcess : processHandles) {
+            WaitForSingleObjectEx(hProcess, INFINITE, TRUE);
+            CloseHandle(hProcess);
+        }
+
+        snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (snapshot != INVALID_HANDLE_VALUE) {
+            if (Process32FirstW(snapshot, &entry)) {
+                do {
+                    for (const auto& target : names) {
+                        if (target == entry.szExeFile) {
+                            // ???
+                        }
+                    }
+                } while (Process32NextW(snapshot, &entry));
+            }
+            CloseHandle(snapshot);
+        }
     }
-    
+
 
     // VISUALS
 

@@ -25,6 +25,8 @@
 #define STATUS_BUFFER_TOO_SMALL ((NTSTATUS)0xC0000023L)
 #endif
 
+typedef NTSTATUS(NTAPI* pNtUnmapViewOfSection)(HANDLE ProcessHandle, PVOID BaseAddress);
+
 #ifndef _UNICODE_STRING_DEFINED
 #define _UNICODE_STRING_DEFINED
 typedef struct _UNICODE_STRING {

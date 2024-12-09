@@ -19,6 +19,7 @@ namespace Registry {
     private:
         static bool GUID();
         static bool Users();
+        static bool HardwareInfo();
         static bool EDID();
         static bool Binaries(HANDLE hKey, const std::wstring& valueName, const BYTE* data, size_t dataSize);
     };

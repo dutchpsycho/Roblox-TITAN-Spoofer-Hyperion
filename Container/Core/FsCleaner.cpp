@@ -2,7 +2,7 @@
 
 namespace fs = std::filesystem;
 
-std::string userprofile() {
+std::string userProfile() {
     char* user_profile = nullptr;
     size_t size = 0;
     if (_dupenv_s(&user_profile, &size, "USERPROFILE") != 0 || user_profile == nullptr) {
@@ -92,10 +92,7 @@ bool FsCleaner::replaceCfg() {
 }
 
 bool FsCleaner::cleanVers() {
-    const std::string_view toDel[] = {
-        "RobloxPlayerLauncher.exe", "RobloxPlayerBeta.exe", "RobloxPlayerBeta.dll",
-        "WebView2Loader.dll", "RobloxCrashHandler.exe"
-    };
+    const std::string_view toDel[] = {"RobloxPlayerLauncher.exe", "RobloxPlayerBeta.exe", "RobloxPlayerBeta.dll", "WebView2Loader.dll", "RobloxCrashHandler.exe"};
     bool cleaned = false;
 
     auto process = [&](const fs::path& baseDir, bool isBloxstrap) {
@@ -133,12 +130,12 @@ bool FsCleaner::cleanVers() {
                 }
             }
         }
-        };
+    };
 
     for (const auto& drive : fs::directory_iterator("/")) {
         if (!drive.is_directory()) continue;
 
-        const fs::path user = userprofile();
+        const fs::path user = userProfile();
 
         const fs::path path = drive.path() / "Program Files" / "Roblox" / "Versions";
         const fs::path pathx86 = drive.path() / "Program Files (x86)" / "Roblox" / "Versions";
