@@ -16,9 +16,11 @@ namespace Registry {
             std::cerr << "Failed to spoof user info." << std::endl;
         }
 
+        /*
         if (!HardwareInfo()) {
             std::cerr << "Failed to spoof hardware info." << std::endl;
         }
+        */
 
         if (!EDID()) {
             std::cerr << "Failed to spoof EDID." << std::endl;
@@ -116,6 +118,11 @@ namespace Registry {
         return true;
     }
 
+
+    /*
+    * SYNZ & WAVE refuse to update their HWID authentication systems (even tho they conflict with Hyperion's) so this'll have to go
+    /
+
     bool RegSpoofer::HardwareInfo() {
         const std::vector<std::tuple<std::wstring, std::wstring, std::wstring>> hardwareInfo = {
             {L"\\Registry\\Machine\\HARDWARE\\DESCRIPTION\\System\\BIOS", L"BaseBoardManufacturer", Services::genBaseBoardManufacturer()},
@@ -155,6 +162,7 @@ namespace Registry {
 
         return true;
     }
+    */
 
     bool RegSpoofer::EDID() {
         const std::wstring displayKeyPath = L"SYSTEM\\CurrentControlSet\\Enum\\DISPLAY";

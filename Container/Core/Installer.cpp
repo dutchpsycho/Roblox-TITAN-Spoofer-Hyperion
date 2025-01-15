@@ -106,7 +106,7 @@ void Installer::openFile(const std::string& filePath) {
 
     std::string command = "\"" + filePath + "\"";
     if (filePath.find("Bloxstrap.exe") != std::string::npos) {
-        command += " -player"; // invoke player directly
+        command += " -player"; // yay auto install
     }
 
     STARTUPINFOA si = { 0 };
@@ -132,6 +132,7 @@ void Installer::openFile(const std::string& filePath) {
     }
 }
 
+// idk if this works on RobloxInstaller, but it does on Bloxstrap
 void Installer::monrbx(std::atomic<bool>& terminated) {
     int attempts = 0;
 

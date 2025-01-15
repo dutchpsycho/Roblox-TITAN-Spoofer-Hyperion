@@ -135,6 +135,7 @@
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +143,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <PreventDllBinding>false</PreventDllBinding>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -2,33 +2,11 @@
 
 namespace fs = std::filesystem;
 
-std::string userProfile() {
-    char* user_profile = nullptr;
-    size_t size = 0;
-    if (_dupenv_s(&user_profile, &size, "USERPROFILE") != 0 || user_profile == nullptr) {
-        throw std::runtime_error("failed to get USERPROFILE");}
-    std::string userProfileStr(user_profile);
-    free(user_profile);
-    return userProfileStr;
-}
-
-void FsCleaner::run() {
-    Services::SectHeader("File System Cleaning", 202);
-
-    bool logsCleaned = delLogs();
-    bool cfgReplaced = replaceCfg();
-    bool versCleaned = cleanVers();
-
-    if (!logsCleaned && !cfgReplaced && !versCleaned) {
-        std::cout << "Nothing to clean :P" << std::endl;
-    }
-}
-
 std::string FsCleaner::getEnv(const char* var) {
     char* buffer = nullptr;
     size_t size = 0;
     if (_dupenv_s(&buffer, &size, var) != 0 || !buffer) {
-        throw std::runtime_error("Failed to retrieve environment variable: " + std::string(var));
+        throw std::runtime_error("failed to retrieve environment variable: " + std::string(var));
     }
     std::string result(buffer);
     free(buffer);
@@ -37,115 +15,98 @@ std::string FsCleaner::getEnv(const char* var) {
 
 template <typename Func>
 void FsCleaner::retry(Func func, const fs::path& path) {
-    int retries = 0;
-    while (retries < 3) {
+    for (int retries = 0; retries < 3; ++retries) {
         try {
             func();
             return;
         }
         catch (const fs::filesystem_error&) {
-            retries++;
-            if (retries >= 5) return; // roblox should die within 5s, if not sums wrong
-
-            std::cout << "Roblox seems to be open, Retrying in 1s..." << std::endl;
+            std::cout << "operation failed on: " << path << ", retrying in 1s..." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 }
 
-bool FsCleaner::delLogs() {
-    const fs::path tempPath = getEnv("TEMP");
-    const std::string_view targets[] = { "Roblox", "RobloxPlayerBeta.pdb", "crashpad_roblox" };
-    bool cleaned = false;
+void FsCleaner::run() {
+    Services::SectHeader("File System Cleaning", 202);
 
-    for (const auto& target : targets) {
-        const fs::path path = tempPath / target;
-        retry([&]() {
-            if (fs::exists(path)) {
-                fs::is_directory(path) ? fs::remove_all(path) : fs::remove(path);
-                std::cout << "Deleted -> " << path << std::endl;
-                cleaned = true;
-            }
-            }, path);
+    bool logsCleaned = cleanPaths({
+        { getEnv("TEMP"), { "Roblox", "RobloxPlayerBeta.pdb", "crashpad_roblox" } }
+        });
+
+    bool cfgReplaced = replaceCfg(getEnv("LOCALAPPDATA") + "/Roblox/GlobalBasicSettings_13.xml");
+
+    bool versionsCleaned = cleanVersions({
+        { "C:/Program Files/Roblox/Versions", false },
+        { "C:/Program Files (x86)/Roblox/Versions", false },
+        { getEnv("USERPROFILE") + "/AppData/Local/Bloxstrap/Versions", false },
+        { getEnv("LOCALAPPDATA") + "/Fishstrap/Versions", false },
+        { getEnv("LOCALAPPDATA") + "/Fishstrap/Roblox/Versions", false }
+        });
+
+    if (!logsCleaned && !cfgReplaced && !versionsCleaned) {
+        std::cout << "nothing to clean :p" << std::endl;
+    }
+}
+
+bool FsCleaner::cleanPaths(const std::vector<std::pair<fs::path, std::vector<std::string_view>>>& paths) {
+    bool cleaned = false;
+    for (const auto& [basePath, targets] : paths) {
+        for (const auto& target : targets) {
+            const fs::path path = basePath / target;
+            retry([&]() {
+                if (fs::exists(path)) {
+                    fs::is_directory(path) ? fs::remove_all(path) : fs::remove(path);
+                    std::cout << "deleted -> " << path << std::endl;
+                    cleaned = true;
+                }
+                }, path);
+        }
     }
     return cleaned;
 }
 
-bool FsCleaner::replaceCfg() {
-    const fs::path setsPath = fs::path(getEnv("LOCALAPPDATA")) / "Roblox" / "GlobalBasicSettings_13.xml";
-    if (!fs::exists(setsPath)) return false;
+bool FsCleaner::replaceCfg(const fs::path& cfgPath) {
+    if (!fs::exists(cfgPath)) return false;
 
-    bool cleaned = false;
+    bool cleaned = process(cfgPath);
 
-    if (process(setsPath)) {
-        for (const auto& entry : fs::directory_iterator(setsPath.parent_path())) {
+    for (const auto& entry : fs::directory_iterator(cfgPath.parent_path())) {
+        if (entry.path().filename() != cfgPath.filename()) {
             retry([&]() {
-                if (entry.path().filename() != "GlobalBasicSettings_13.xml") {
-                    fs::remove_all(entry.path());
-                    std::cout << "Deleted -> " << entry.path() << std::endl;
-                    cleaned = true;
-                }
+                fs::remove_all(entry.path());
+                std::cout << "deleted -> " << entry.path() << std::endl;
+                cleaned = true;
                 }, entry.path());
         }
     }
     return cleaned;
 }
 
-bool FsCleaner::cleanVers() {
-    const std::string_view toDel[] = {"RobloxPlayerLauncher.exe", "RobloxPlayerBeta.exe", "RobloxPlayerBeta.dll", "WebView2Loader.dll", "RobloxCrashHandler.exe"};
+bool FsCleaner::cleanVersions(const std::vector<std::pair<fs::path, bool>>& paths) {
+    const std::vector<std::string> filesToDelete = {
+        "RobloxPlayerLauncher.exe", "RobloxPlayerBeta.exe", "RobloxPlayerBeta.dll",
+        "WebView2Loader.dll", "RobloxCrashHandler.exe"
+    };
+
     bool cleaned = false;
+    for (const auto& [baseDir, _] : paths) {
+        if (!fs::exists(baseDir) || !fs::is_directory(baseDir)) continue;
 
-    auto process = [&](const fs::path& baseDir, bool isBloxstrap) {
-        if (!fs::exists(baseDir) || !fs::is_directory(baseDir)) return;
+        for (const auto& versionDir : fs::directory_iterator(baseDir)) {
+            if (!fs::is_directory(versionDir)) continue;
 
-        if (isBloxstrap) {
-            for (const auto& file : toDel) {
-                const fs::path filePath = baseDir / file;
-                retry([&]() {
-                    if (fs::exists(filePath)) {
-                        fs::remove(filePath);
-                        std::cout << "Deleted -> " << filePath << std::endl;
+            if (versionDir.path().filename().string().starts_with("version-")) {
+                for (const auto& file : filesToDelete) {
+                    retry([&]() {
+                        fs::remove(versionDir.path() / file);
+                        std::cout << "deleted -> " << versionDir.path() / file << std::endl;
                         cleaned = true;
-                    }
-                    }, filePath);
-            }
-        }
-        else {
-            for (const auto& verDir : fs::directory_iterator(baseDir)) {
-                if (!fs::is_directory(verDir)) continue;
-
-                const auto& dir = verDir.path().filename().string();
-
-                if (dir.starts_with("version-")) {
-                    for (const auto& file : toDel) {
-                        const fs::path filePath = verDir.path() / file;
-                        retry([&]() {
-                            if (fs::exists(filePath)) {
-                                fs::remove(filePath);
-                                std::cout << "Deleted -> " << filePath << std::endl;
-                                cleaned = true;
-                            }
-                            }, filePath);
-                    }
+                        }, versionDir.path() / file);
                 }
             }
         }
-    };
-
-    for (const auto& drive : fs::directory_iterator("/")) {
-        if (!drive.is_directory()) continue;
-
-        const fs::path user = userProfile();
-
-        const fs::path path = drive.path() / "Program Files" / "Roblox" / "Versions";
-        const fs::path pathx86 = drive.path() / "Program Files (x86)" / "Roblox" / "Versions";
-        const fs::path bloxstrapPath = user / "AppData" / "Local" / "Bloxstrap" / "Roblox" / "Player";
-
-        process(path, false);
-        process(pathx86, false);
-        process(bloxstrapPath, true);
     }
-
     return cleaned;
 }
 
@@ -156,17 +117,33 @@ bool FsCleaner::process(const fs::path& filePath) {
     std::string content((std::istreambuf_iterator<char>(cfgFile)), std::istreambuf_iterator<char>());
     cfgFile.close();
 
-    const std::string updCont = updCfg(content);
+    const std::string updatedContent = updCfg(content);
     fs::remove(filePath);
 
     std::ofstream patchedCfg(filePath, std::ios::binary);
     if (!patchedCfg) return false;
 
-    patchedCfg << updCont;
+    patchedCfg << updatedContent;
     return true;
 }
 
 std::string FsCleaner::updCfg(const std::string& content) {
     static const std::regex referRegex(R"(<Item class="UserGameSettings" referent="[^"]+">)");
-    return std::regex_replace(content, referRegex, R"(<Item class="UserGameSettings" referent="TITAN">)");
+
+    auto b4bv = []() {
+        const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<size_t> dist(0, chars.size() - 1);
+
+        std::string result;
+        result.reserve(24);
+        for (int i = 0; i < 24; ++i) {
+            result += chars[dist(gen)];
+        }
+        return result;
+        };
+
+    return std::regex_replace(content, referRegex,
+        "<Item class=\"UserGameSettings\" referent=\"" + b4bv() + "\">");
 }

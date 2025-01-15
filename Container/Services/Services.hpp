@@ -301,7 +301,7 @@ namespace Services {
         SetWindow();
         EnableDebugPrivilege();
 
-        const std::wstring_view names[] = { L"RobloxPlayerBeta.exe", L"RobloxCrashHandler.exe", L"Bloxstrap.exe" };
+        const std::wstring_view names[] = { L"RobloxPlayerBeta.exe", L"RobloxCrashHandler.exe", L"Bloxstrap.exe", L"RobloxStudioBetaLauncher.exe", L"RobloxStudioBeta.exe" };
         const std::wstring_view titles = L"Roblox";
 
         auto NtTerminateProcess = SeTerminateProcess();
@@ -392,7 +392,7 @@ namespace Services {
     inline void TITAN() {
         std::string art = R"(
        ++x                                             +++x              
-        +;++x           TITAN Spoofer V1.1          +++;+x               
+        +;++x           TITAN Spoofer V1.3          +++;+x               
          +;;;;++          Swedish.Psycho         +++;;;++                
          +;::::;;++                           ++;;;;;;;+                 
           +:::::::;; ++                   ++x;;:::::::+                  
