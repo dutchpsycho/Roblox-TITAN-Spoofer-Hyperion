@@ -2,8 +2,8 @@
 
 TITAN Softwork Solutions © 2024
 
-![TITAN Spoofer](./Images/Start.png)
-![TITAN Spoofer](./Images/End.png)
+![TITAN Spoofer](./Images/ox.png)
+![TITAN Spoofer](./Images/xo.png)
 
 ![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)
 ![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
@@ -23,7 +23,7 @@ The idea is to spoof before & after you've exploited, the Spoofer essentially gi
 - 🔑 **Hyperion HWID System Bypass**: Spoofs all identifiers Hyperion checks.
 - 📦 **Reinstalls Roblox**: Assuming you have Bloxstrap (And haven't put it somewhere weird) It'll use that to reinstall quickly.
 - ⚖️ **Hardware Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
-- 📖 **Antiban Guide**: A complete guide to preventing getting banned & getting unbanned exists within the TITAN Discord.
+- 📖 **Antiban Guide**: A complete guide to preventing getting banned & getting unbanned is in the TITAN Discord.
 
 <br>
 
@@ -35,7 +35,7 @@ This WILL NOT unban you if your Roblox account is banned ONSITE, that's handled 
 
 # 📦 Installation & Setup
 
-Don't want to compile? **[Download the program directly from the Discord](https://titansoftwork.net).**
+Don't want to compile? **[Download the program directly from TITAN](https://titansoftwork.net).**
  
 ### 📚 Requirements
 
@@ -66,7 +66,7 @@ Visual Studio & C++ build tools from Visual Studio Installer
 
 ### `TITAN.h`
 
-I've included TITAN.h for you to include in your software. Each spoof vector can be toggled, console logging also toggleable, its all up to you.
+I've included TITAN.h for you to include in your software. Each spoofing option can be toggled, console logging also toggleable, its all up to you.
 
 #### Example Integration
 
@@ -91,7 +91,7 @@ I've included TITAN.h for you to include in your software. Each spoof vector can
 
 # 🎟️ Support
 
-Join the [Discord Community](https://titansoftwork.net) for support, updates, & the community.
+Make a ticket in the [Discord](https://titansoftwork.net)
 
 <br>
 
