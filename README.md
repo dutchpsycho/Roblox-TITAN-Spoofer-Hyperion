@@ -2,13 +2,11 @@
 
 TITAN Softwork Solutions © 2024
 
-![TITAN Spoofer](./Images/ox.png)
-![TITAN Spoofer](./Images/xo.png)
+![TITAN Spoofer](./Images/Start.png)
+![TITAN Spoofer](./Images/All.png)
 
 ![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)
 ![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
-
-![TITAN Spoofer](./Images/TITAN%20(Custom).png)
 
 # 🗨️ Info
 
