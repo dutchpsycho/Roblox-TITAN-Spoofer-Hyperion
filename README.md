@@ -19,7 +19,7 @@ The idea is to spoof before & after you've exploited, the Spoofer essentially gi
 # 💎 Features
 
 - 🔑 **Hyperion HWID System Bypass**: Spoofs all identifiers Hyperion checks.
-- 📦 **Reinstalls Roblox**: Assuming you have Bloxstrap (And haven't put it somewhere weird) It'll use that to reinstall quickly.
+- 📦 **Reinstalls Roblox**: Attempts Roblox reinstallation via Bloxstrap, RobloxInstaller as a fallback.
 - ⚖️ **Hardware Unban**: If you're HWID banned (Hyperion banned) this'll fix that for you.
 - 📖 **Antiban Guide**: A complete guide to preventing getting banned & getting unbanned is in the TITAN Discord.
 
