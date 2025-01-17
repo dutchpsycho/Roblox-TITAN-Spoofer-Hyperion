@@ -1,5 +1,3 @@
-// Yay! now I can include TITAN Spoofer in my own projects!
-
 #pragma once
 
 #include "Container/Services/Services.hpp"
@@ -7,7 +5,6 @@
 #include "Container/Header/Mac.h"
 #include "Container/Header/Registry.h"
 #include "Container/Header/WMI.h"
-#include "Container/Header/Installer.h"
 
 
 /**
@@ -41,8 +38,7 @@ namespace TitanSpoofer {
             MAC::MacSpoofer::run();
             Registry::RegSpoofer::run();
             WMI::WmiSpoofer::run();
-
-            Installer::run();
+            FsCleaner::Install();
 
             if (!logs) {
                 reOut();

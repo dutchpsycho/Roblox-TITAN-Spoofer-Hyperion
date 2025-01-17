@@ -1,4 +1,4 @@
-// TITAN Spoofer V1.3
+// TITAN Spoofer V1.4
 // Licensed under CC BY-NC-ND 4.0
 // Developed by TITAN
 // TITAN Softworks EST. 2024
@@ -9,7 +9,6 @@
 #include "Container/Header/Mac.h"
 #include "Container/Header/Registry.h"
 #include "Container/Header/WMI.h"
-#include "Container/Header/Installer.h"
 
 int main() {
     Services::TITAN();
@@ -20,8 +19,7 @@ int main() {
     MAC::MacSpoofer::run();
     Registry::RegSpoofer::run();
     WMI::WmiSpoofer::run();
-
-    Installer::run();
+    FsCleaner::Install();
 
     std::cout << "\nAll done :3 Bye Bye Hyperion :mog: \n";
 

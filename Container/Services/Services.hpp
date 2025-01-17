@@ -1,16 +1,26 @@
 ﻿#pragma once
 
+#pragma warning(push)
+#pragma warning(disable : 4244)
+
 #include "Defs.h"
 
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <shlobj.h>
 
 #include <string>
-#include <chrono>
+#include <filesystem>
+#include <regex>
+#include <fstream>
+#include <iostream>
 #include <random>
+#include <vector>
+#include <thread>
+#include <chrono>
+#include <atomic>
 #include <sstream>
 #include <iomanip>
-#include <iostream>
 #include <array>
 
 namespace Services {
@@ -267,6 +277,93 @@ namespace Services {
 
     // HELPERS
 
+    inline std::wstring GetSysDrive() {
+        wchar_t systemDrive[MAX_PATH];
+        if (!GetEnvironmentVariableW(L"SystemDrive", systemDrive, MAX_PATH)) {
+            throw std::runtime_error("Failed to resolve system drive.");
+        }
+        std::wstring drivePath(systemDrive);
+        if (drivePath.back() != L'\\') {
+            drivePath += L'\\';
+        }
+        return drivePath;
+    }
+
+    inline std::wstring GetUser() {
+        wchar_t userProfile[MAX_PATH];
+        if (!GetEnvironmentVariableW(L"USERPROFILE", userProfile, MAX_PATH)) {
+            throw std::runtime_error("Failed to resolve user profile.");
+        }
+        return userProfile;
+    }
+
+    inline void BulkDelete(const std::filesystem::path& dirPath, const std::vector<std::wstring>& filePatterns) {
+        if (!std::filesystem::exists(dirPath)) return;
+        for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+            if (entry.is_regular_file()) {
+                for (const auto& pattern : filePatterns) {
+                    if (entry.path().filename().wstring() == pattern) {
+                        std::filesystem::remove(entry.path());
+                        std::wcout << L"Deleted -> " << entry.path().wstring() << std::endl;
+                    }
+                }
+            }
+        }
+    }
+
+    inline std::wstring ResolveTarget(const std::wstring& shortcutPath) {
+        IShellLinkW* shellLink = nullptr;
+        IPersistFile* persistFile = nullptr;
+        wchar_t target[MAX_PATH] = {};
+        HRESULT coInitResult = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        bool coInitialized = SUCCEEDED(coInitResult);
+
+        try {
+            if (!std::filesystem::exists(shortcutPath)) {
+                throw std::runtime_error("Shortcut file does not exist: " +
+                    std::string(shortcutPath.begin(), shortcutPath.end()));
+            }
+
+            HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLinkW,
+                (LPVOID*)&shellLink);
+            if (FAILED(hr)) {
+                throw std::runtime_error("Failed to create shell link instance.");
+            }
+
+            hr = shellLink->QueryInterface(IID_IPersistFile, (LPVOID*)&persistFile);
+            if (FAILED(hr)) {
+                shellLink->Release();
+                throw std::runtime_error("Failed to query persist file interface.");
+            }
+
+            hr = persistFile->Load(shortcutPath.c_str(), STGM_READ);
+            if (FAILED(hr)) {
+                shellLink->Release();
+                persistFile->Release();
+                throw std::runtime_error("Failed to load shortcut file.");
+            }
+
+            hr = shellLink->GetPath(target, MAX_PATH, nullptr, 0);
+            if (FAILED(hr)) {
+                shellLink->Release();
+                persistFile->Release();
+                throw std::runtime_error("Failed to resolve shortcut target.");
+            }
+
+            shellLink->Release();
+            persistFile->Release();
+            if (coInitialized) CoUninitialize();
+
+            return target;
+        }
+        catch (...) {
+            if (shellLink) shellLink->Release();
+            if (persistFile) persistFile->Release();
+            if (coInitialized) CoUninitialize();
+            throw;
+        }
+    }
+
     inline bool EnableDebugPrivilege() {
         HANDLE hToken;
         TOKEN_PRIVILEGES tokenPrivileges = { 0 };
@@ -392,7 +489,7 @@ namespace Services {
     inline void TITAN() {
         std::string art = R"(
        ++x                                             +++x              
-        +;++x           TITAN Spoofer V1.3          +++;+x               
+        +;++x           TITAN Spoofer V1.4          +++;+x               
          +;;;;++          Swedish.Psycho         +++;;;++                
          +;::::;;++                           ++;;;;;;;+                 
           +:::::::;; ++                   ++x;;:::::::+                  

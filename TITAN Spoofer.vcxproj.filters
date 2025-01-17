@@ -39,9 +39,6 @@
     <ClInclude Include="TITAN.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Container\Header\Installer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Container\Core\FsCleaner.cpp">
@@ -58,9 +55,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Container\Core\WMI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Container\Core\Installer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

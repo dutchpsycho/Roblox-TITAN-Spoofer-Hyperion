@@ -1,149 +1,142 @@
 #include "../Header/FsCleaner.h"
+#include "../Services/Services.hpp"
 
 namespace fs = std::filesystem;
 
-std::string FsCleaner::getEnv(const char* var) {
-    char* buffer = nullptr;
-    size_t size = 0;
-    if (_dupenv_s(&buffer, &size, var) != 0 || !buffer) {
-        throw std::runtime_error("failed to retrieve environment variable: " + std::string(var));
+void FsCleaner::RmvReferents(const std::filesystem::path& filePath, const std::wstring& itemClass) {
+    if (!fs::exists(filePath)) {
+        throw std::runtime_error("File does not exist: " + filePath.string());
     }
-    std::string result(buffer);
-    free(buffer);
-    return result;
+
+    std::wifstream inFile(filePath);
+    if (!inFile.is_open()) {
+        throw std::runtime_error("Failed to open file: " + filePath.string());
+    }
+
+    std::wstringstream buffer;
+    buffer << inFile.rdbuf();
+    inFile.close();
+    std::wstring content = buffer.str();
+
+    std::wregex referRegex(LR"(<Item class=\")" + itemClass + LR"(" referent=\"[^\"]+\">)");
+
+    std::wstring replacement = L"<Item class=\"" + itemClass + L"\" referent=\"" + Services::genRand() + L"\">";
+    content = std::regex_replace(content, referRegex, replacement);
+
+    std::wofstream outFile(filePath);
+    if (!outFile.is_open()) {
+        throw std::runtime_error("Failed to write to file -> " + filePath.string());
+    }
+    outFile << content;
+    outFile.close();
 }
 
-template <typename Func>
-void FsCleaner::retry(Func func, const fs::path& path) {
-    for (int retries = 0; retries < 3; ++retries) {
-        try {
-            func();
-            return;
-        }
-        catch (const fs::filesystem_error&) {
-            std::cout << "operation failed on: " << path << ", retrying in 1s..." << std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+void FsCleaner::CleanRbx() {
+    std::wstring systemDrive = Services::GetSysDrive();
+    std::wstring userProfile = Services::GetUser();
+
+    fs::path rbxSPath = fs::path(systemDrive) / L"ProgramData/Microsoft/Windows/Start Menu/Programs/Roblox/Roblox Player.lnk";
+    std::wstring rbxTarget = Services::ResolveTarget(rbxSPath);
+    fs::path rbxDir = fs::path(rbxTarget).parent_path().parent_path();
+    for (const auto& entry : fs::directory_iterator(rbxDir)) {
+        if (entry.is_directory() && entry.path().filename().wstring().find(L"version-") == 0) {
+            Services::BulkDelete(entry.path(), { L"RobloxPlayerBeta.exe", L"RobloxPlayerBeta.dll", L"RobloxCrashHandler.exe", L"RobloxPlayerLauncher.exe" });
         }
     }
+
+    fs::path bloxstrapSPath = fs::path(userProfile) / L"AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Bloxstrap.lnk";
+    if (fs::exists(bloxstrapSPath)) {
+        std::wstring bloxstrapTarget = Services::ResolveTarget(bloxstrapSPath);
+        fs::path bloxstrapDir = fs::path(bloxstrapTarget).parent_path();
+        for (const auto& entry : fs::directory_iterator(bloxstrapDir / L"Versions")) {
+            if (entry.is_directory() && entry.path().filename().wstring().find(L"version-") == 0) {
+                Services::BulkDelete(entry.path(), { L"RobloxPlayerBeta.exe", L"RobloxPlayerBeta.dll", L"RobloxCrashHandler.exe", L"RobloxPlayerLauncher.exe" });
+            }
+        }
+    }
+
+    fs::path tempDir = fs::path(userProfile) / L"AppData/Local/Temp/Roblox";
+    fs::remove_all(tempDir);
+    std::wcout << L"Deleted -> " << tempDir << std::endl;
+
+    fs::path robloxLogsDir = fs::path(userProfile) / L"AppData/Local/Roblox";
+    for (const auto& subDir : { L"logs", L"LocalStorage", L"Downloads" }) {
+        fs::path fullPath = robloxLogsDir / subDir;
+        fs::remove_all(fullPath);
+        std::wcout << L"Deleted -> " << fullPath << std::endl;
+    }
+
+    RmvReferents(robloxLogsDir / L"AnalysticsSettings.xml", L"GoogleAnalyticsConfiguration");
+    RmvReferents(robloxLogsDir / L"GlobalBasicSettings_13.xml", L"UserGameSettings");
+
+    std::cout << "Replaced Global & Analytic Referents" << std::endl;
 }
 
 void FsCleaner::run() {
     Services::SectHeader("File System Cleaning", 202);
-
-    bool logsCleaned = cleanPaths({
-        { getEnv("TEMP"), { "Roblox", "RobloxPlayerBeta.pdb", "crashpad_roblox" } }
-        });
-
-    bool cfgReplaced = replaceCfg(getEnv("LOCALAPPDATA") + "/Roblox/GlobalBasicSettings_13.xml");
-
-    bool versionsCleaned = cleanVersions({
-        { "C:/Program Files/Roblox/Versions", false },
-        { "C:/Program Files (x86)/Roblox/Versions", false },
-        { getEnv("USERPROFILE") + "/AppData/Local/Bloxstrap/Versions", false },
-        { getEnv("LOCALAPPDATA") + "/Fishstrap/Versions", false },
-        { getEnv("LOCALAPPDATA") + "/Fishstrap/Roblox/Versions", false }
-        });
-
-    if (!logsCleaned && !cfgReplaced && !versionsCleaned) {
-        std::cout << "nothing to clean :p" << std::endl;
+    try {
+        CleanRbx();
+    }
+    catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
     }
 }
 
-bool FsCleaner::cleanPaths(const std::vector<std::pair<fs::path, std::vector<std::string_view>>>& paths) {
-    bool cleaned = false;
-    for (const auto& [basePath, targets] : paths) {
-        for (const auto& target : targets) {
-            const fs::path path = basePath / target;
-            retry([&]() {
-                if (fs::exists(path)) {
-                    fs::is_directory(path) ? fs::remove_all(path) : fs::remove(path);
-                    std::cout << "deleted -> " << path << std::endl;
-                    cleaned = true;
-                }
-                }, path);
-        }
-    }
-    return cleaned;
-}
+void FsCleaner::Install() {
+    Services::SectHeader("Roblox Installation", 203);
 
-bool FsCleaner::replaceCfg(const fs::path& cfgPath) {
-    if (!fs::exists(cfgPath)) return false;
+    std::wstring userProfile = Services::GetUser();
+    std::wstring bloxstrapPath = fs::path(userProfile) / L"AppData/Local/Bloxstrap/Bloxstrap.exe";
+    std::wstring rbxPath = fs::path(Services::GetSysDrive()) / L"Program Files (x86)/Roblox/Versions/RobloxPlayerInstaller.exe";
 
-    bool cleaned = process(cfgPath);
+    std::atomic<bool> stopMon(false);
 
-    for (const auto& entry : fs::directory_iterator(cfgPath.parent_path())) {
-        if (entry.path().filename() != cfgPath.filename()) {
-            retry([&]() {
-                fs::remove_all(entry.path());
-                std::cout << "deleted -> " << entry.path() << std::endl;
-                cleaned = true;
-                }, entry.path());
-        }
-    }
-    return cleaned;
-}
+    auto monRbx = [&stopMon]() {
+        while (!stopMon) {
+            HWND robloxWindow = FindWindowW(nullptr, L"Roblox");
+            if (robloxWindow) {
+                DWORD processId = 0;
+                GetWindowThreadProcessId(robloxWindow, &processId);
 
-bool FsCleaner::cleanVersions(const std::vector<std::pair<fs::path, bool>>& paths) {
-    const std::vector<std::string> filesToDelete = {
-        "RobloxPlayerLauncher.exe", "RobloxPlayerBeta.exe", "RobloxPlayerBeta.dll",
-        "WebView2Loader.dll", "RobloxCrashHandler.exe"
-    };
-
-    bool cleaned = false;
-    for (const auto& [baseDir, _] : paths) {
-        if (!fs::exists(baseDir) || !fs::is_directory(baseDir)) continue;
-
-        for (const auto& versionDir : fs::directory_iterator(baseDir)) {
-            if (!fs::is_directory(versionDir)) continue;
-
-            if (versionDir.path().filename().string().starts_with("version-")) {
-                for (const auto& file : filesToDelete) {
-                    retry([&]() {
-                        fs::remove(versionDir.path() / file);
-                        std::cout << "deleted -> " << versionDir.path() / file << std::endl;
-                        cleaned = true;
-                        }, versionDir.path() / file);
+                if (processId != 0) {
+                    HANDLE processHandle = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
+                    if (processHandle) {
+                        TerminateProcess(processHandle, 0);
+                        CloseHandle(processHandle);
+                        stopMon = true;
+                        return;
+                    }
                 }
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
         }
-    }
-    return cleaned;
-}
-
-bool FsCleaner::process(const fs::path& filePath) {
-    std::ifstream cfgFile(filePath, std::ios::binary);
-    if (!cfgFile) return false;
-
-    std::string content((std::istreambuf_iterator<char>(cfgFile)), std::istreambuf_iterator<char>());
-    cfgFile.close();
-
-    const std::string updatedContent = updCfg(content);
-    fs::remove(filePath);
-
-    std::ofstream patchedCfg(filePath, std::ios::binary);
-    if (!patchedCfg) return false;
-
-    patchedCfg << updatedContent;
-    return true;
-}
-
-std::string FsCleaner::updCfg(const std::string& content) {
-    static const std::regex referRegex(R"(<Item class="UserGameSettings" referent="[^"]+">)");
-
-    auto b4bv = []() {
-        const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<size_t> dist(0, chars.size() - 1);
-
-        std::string result;
-        result.reserve(24);
-        for (int i = 0; i < 24; ++i) {
-            result += chars[dist(gen)];
-        }
-        return result;
         };
 
-    return std::regex_replace(content, referRegex,
-        "<Item class=\"UserGameSettings\" referent=\"" + b4bv() + "\">");
+    if (fs::exists(bloxstrapPath)) {
+
+        ShellExecuteW(nullptr, L"open", bloxstrapPath.c_str(), L"-player", nullptr, SW_HIDE);
+
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+
+        std::thread monThread(monRbx);
+
+        monThread.join();
+        std::wcout << L"Reinstalled via Bloxstrap.\n";
+
+    }
+
+    else if (fs::exists(rbxPath)) {
+
+        ShellExecuteW(nullptr, L"open", rbxPath.c_str(), nullptr, nullptr, SW_HIDE);
+
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::wcout << L"Roblox installer executed.\n";
+
+    }
+
+    else {
+        throw std::runtime_error("Neither Bloxstrap nor Roblox installer found..?");
+    }
+
+    stopMon = true;
 }

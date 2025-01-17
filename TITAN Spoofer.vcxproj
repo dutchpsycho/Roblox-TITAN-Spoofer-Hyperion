@@ -149,7 +149,6 @@
   <ItemGroup>
     <ClInclude Include="Container\Header\COM.h" />
     <ClInclude Include="Container\Header\FsCleaner.h" />
-    <ClInclude Include="Container\Header\Installer.h" />
     <ClInclude Include="Container\Header\Mac.h" />
     <ClInclude Include="Container\Header\Registry.h" />
     <ClInclude Include="Container\Header\WMI.h" />
@@ -160,7 +159,6 @@
   <ItemGroup>
     <ClCompile Include="Container\Core\COM.cpp" />
     <ClCompile Include="Container\Core\FsCleaner.cpp" />
-    <ClCompile Include="Container\Core\Installer.cpp" />
     <ClCompile Include="Container\Core\Mac.cpp" />
     <ClCompile Include="Container\Core\Registry.cpp" />
     <ClCompile Include="Container\Core\WMI.cpp" />
