@@ -36,12 +36,18 @@ void FsCleaner::CleanRbx() {
     std::wstring userProfile = Services::GetUser();
 
     fs::path rbxSPath = fs::path(systemDrive) / L"ProgramData/Microsoft/Windows/Start Menu/Programs/Roblox/Roblox Player.lnk";
-    std::wstring rbxTarget = Services::ResolveTarget(rbxSPath);
-    fs::path rbxDir = fs::path(rbxTarget).parent_path().parent_path();
-    for (const auto& entry : fs::directory_iterator(rbxDir)) {
-        if (entry.is_directory() && entry.path().filename().wstring().find(L"version-") == 0) {
-            Services::BulkDelete(entry.path(), { L"RobloxPlayerBeta.exe", L"RobloxPlayerBeta.dll", L"RobloxCrashHandler.exe", L"RobloxPlayerLauncher.exe" });
+
+    if (fs::exists(rbxSPath)) {
+        std::wstring rbxTarget = Services::ResolveTarget(rbxSPath);
+        fs::path rbxDir = fs::path(rbxTarget).parent_path().parent_path();
+        for (const auto& entry : fs::directory_iterator(rbxDir)) {
+            if (entry.is_directory() && entry.path().filename().wstring().find(L"version-") == 0) {
+                Services::BulkDelete(entry.path(), { L"RobloxPlayerBeta.exe", L"RobloxPlayerBeta.dll", L"RobloxCrashHandler.exe", L"RobloxPlayerLauncher.exe" });
+            }
         }
+    }
+    else {
+        std::cerr << "Warn: Roblox Player shortcut not found here -> " << rbxSPath.string() << '\n';
     }
 
     fs::path bloxstrapSPath = fs::path(userProfile) / L"AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Bloxstrap.lnk";
