@@ -2,7 +2,7 @@
 
 **TITAN Softwork Solutions © 2024**
 
-![TITAN Spoofer](./Images/Start.png)  
+![TITAN](https://avatars.githubusercontent.com/u/199383721?s=200&v=4) 
 ![TITAN Spoofer](./Images/All.png)  
 
 ![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)  
