@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{bcf8ea8b-bf62-4377-94b8-175262879135}</ProjectGuid>
-    <RootNamespace>TITANSpoofer</RootNamespace>
+    <ProjectGuid>{4b689752-889b-4227-92a5-f5b99e3a223c}</ProjectGuid>
+    <RootNamespace>DLL</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -40,13 +40,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -71,12 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\$(Configuration)\Junk\</IntDir>
+    <TargetName>TITAN</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\$(Configuration)\Junk\</IntDir>
+    <TargetName>TITAN</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,6 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,42 +129,25 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <ControlFlowGuard>Guard</ControlFlowGuard>
-      <StringPooling>true</StringPooling>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <StringPooling>true</StringPooling>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <PreventDllBinding>false</PreventDllBinding>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Container\Header\COM.h" />
-    <ClInclude Include="Container\Header\FsCleaner.h" />
-    <ClInclude Include="Container\Header\Mac.h" />
-    <ClInclude Include="Container\Header\Registry.h" />
-    <ClInclude Include="Container\Header\WMI.h" />
-    <ClInclude Include="Container\Services\Defs.h" />
-    <ClInclude Include="Container\Services\Services.hpp" />
-    <ClInclude Include="TITAN.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Container\Core\COM.cpp" />
-    <ClCompile Include="Container\Core\FsCleaner.cpp" />
-    <ClCompile Include="Container\Core\Mac.cpp" />
-    <ClCompile Include="Container\Core\Registry.cpp" />
-    <ClCompile Include="Container\Core\WMI.cpp" />
-    <ClCompile Include="Master.cc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Container\RC\App.rc" />
+    <ClCompile Include="..\Container\Core\COM.cpp" />
+    <ClCompile Include="..\Container\Core\FsCleaner.cpp" />
+    <ClCompile Include="..\Container\Core\Mac.cpp" />
+    <ClCompile Include="..\Container\Core\Registry.cpp" />
+    <ClCompile Include="..\Container\Core\WMI.cpp" />
+    <ClCompile Include="DLLmain.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
