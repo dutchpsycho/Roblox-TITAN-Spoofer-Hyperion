@@ -1,8 +1,5 @@
 // TITAN Spoofer V1.4
 // Licensed under CC BY-NC-ND 4.0
-// Developed by TITAN
-// TITAN Softworks EST. 2024
-// DOU: 2025-01-18
 
 #include <Windows.h>
 #include <iostream>
