@@ -2,6 +2,48 @@
 
 namespace MAC {
 
+    std::wstring GetCurrentSSID() {
+        FILE* pipe = _wpopen(L"netsh wlan show interfaces", L"r");
+        if (!pipe) return L"";
+
+        wchar_t buffer[512];
+        std::wstring output;
+
+        while (fgetws(buffer, sizeof(buffer) / sizeof(wchar_t), pipe)) {
+            output += buffer;
+        }
+
+        _pclose(pipe);
+
+        size_t pos = output.find(L"SSID                   : ");
+        if (pos != std::wstring::npos) {
+            size_t start = pos + wcslen(L"SSID                   : ");
+            size_t end = output.find(L"\n", start);
+            if (end != std::wstring::npos)
+                return output.substr(start, end - start);
+        }
+
+        return L"";
+    }
+
+    void bounceAdapter(const std::wstring& adapterName) {
+        std::wstring disableCmd = L"netsh interface set interface name=\"" + adapterName + L"\" admin=disable";
+        std::wstring enableCmd = L"netsh interface set interface name=\"" + adapterName + L"\" admin=enable";
+
+        _wsystem((disableCmd + L" >nul 2>&1").c_str());
+        Sleep(1000);
+        _wsystem((enableCmd + L" >nul 2>&1").c_str());
+        Sleep(2000);
+
+        if (adapterName.find(L"Wi-Fi") != std::wstring::npos || adapterName.find(L"Wireless") != std::wstring::npos) {
+            std::wstring ssid = GetCurrentSSID();
+            if (!ssid.empty()) {
+                std::wstring connectCmd = L"netsh wlan disconnect >nul 2>&1 && netsh wlan connect name=\"" + ssid + L"\" >nul 2>&1";
+                _wsystem(connectCmd.c_str());
+            }
+        }
+    }
+
     void MacSpoofer::run() {
         Services::SectHeader("MAC Spoofing", 196);
         spoofMac();
@@ -26,12 +68,14 @@ namespace MAC {
     }
 
     std::optional<std::wstring> MacSpoofer::resAdapter(const std::wstring& adapterName) {
-        static thread_local COM::COMInitializer comInit; // no multicom
+
+        COM::COMInitializer comInit;
 
         IWbemLocator* pLoc = nullptr;
         IWbemServices* pSvc = nullptr;
 
-        HRESULT hr = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLoc));
+        HRESULT hr = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER,
+            IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLoc));
         if (FAILED(hr)) return std::nullopt;
 
         BSTR namespacePath = SysAllocString(L"ROOT\\CIMV2");
@@ -64,7 +108,8 @@ namespace MAC {
         ULONG uReturn = 0;
         std::optional<std::wstring> result;
 
-        if (pEnumerator->Next(WBEM_INFINITE, 1, &pAdapter, &uReturn) == WBEM_S_NO_ERROR) {
+        HRESULT nextRes = pEnumerator->Next(WBEM_INFINITE, 1, &pAdapter, &uReturn);
+        if (SUCCEEDED(nextRes) && uReturn != 0) {
             VARIANT vtGUID;
             VariantInit(&vtGUID);
             if (SUCCEEDED(pAdapter->Get(L"GUID", 0, &vtGUID, nullptr, nullptr)) && vtGUID.bstrVal != nullptr) {
@@ -93,14 +138,21 @@ namespace MAC {
         WCHAR subKeyName[256];
         DWORD subKeyLen = 256;
 
-        while (RegEnumKeyEx(hKey, index++, subKeyName, &subKeyLen, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
-            std::wstring subKeyPath = basePath + L"\\" + subKeyName;
+        LONG result;
+        while ((result = RegEnumKeyEx(hKey, index, subKeyName, &subKeyLen, nullptr, nullptr, nullptr, nullptr)) != ERROR_NO_MORE_ITEMS) {
+            if (result != ERROR_SUCCESS) {
+                subKeyLen = 256;
+                index++;
+                continue;
+            }
 
+            std::wstring subKeyPath = basePath + L"\\" + subKeyName;
             HKEY subKey;
             if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKeyPath.c_str(), 0, KEY_READ, &subKey) == ERROR_SUCCESS) {
                 WCHAR guidValue[256];
                 DWORD guidLen = sizeof(guidValue);
-                if (RegQueryValueEx(subKey, L"NetCfgInstanceId", nullptr, nullptr, reinterpret_cast<LPBYTE>(guidValue), &guidLen) == ERROR_SUCCESS) {
+                if (RegQueryValueEx(subKey, L"NetCfgInstanceId", nullptr, nullptr,
+                    reinterpret_cast<LPBYTE>(guidValue), &guidLen) == ERROR_SUCCESS) {
                     if (adapterGUID == guidValue) {
                         RegCloseKey(subKey);
                         RegCloseKey(hKey);
@@ -110,6 +162,7 @@ namespace MAC {
                 RegCloseKey(subKey);
             }
             subKeyLen = 256;
+            index++;
         }
 
         RegCloseKey(hKey);
@@ -121,10 +174,11 @@ namespace MAC {
         if (adapters.empty()) return;
 
         std::mutex outputMutex;
-        std::vector<std::thread> threads;
+        std::vector<std::thread> spoofThreads;
 
         for (const auto& adapter : adapters) {
-            threads.emplace_back([&, adapter]() {
+            spoofThreads.emplace_back([&, adapter]() {
+                COM::COMInitializer comInit;
                 auto adapterGUID = resAdapter(adapter);
                 if (!adapterGUID) return;
 
@@ -141,14 +195,24 @@ namespace MAC {
 
                 HKEY hKey;
                 if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath.c_str(), 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
-                    RegSetValueEx(hKey, L"NetworkAddress", 0, REG_SZ, reinterpret_cast<const BYTE*>(macAddress.c_str()), static_cast<DWORD>(macAddress.size() * sizeof(wchar_t)));
+                    RegSetValueEx(hKey, L"NetworkAddress", 0, REG_SZ,
+                        reinterpret_cast<const BYTE*>(macAddress.c_str()),
+                        static_cast<DWORD>((macAddress.size() + 1) * sizeof(wchar_t)));
                     RegCloseKey(hKey);
                 }
+
+                std::thread bounceThread([adapter]() {
+                    bounceAdapter(adapter);
+                    });
+
+                bounceThread.detach();
                 });
         }
 
-        for (auto& thread : threads) {
-            if (thread.joinable()) thread.join();
+        for (auto& t : spoofThreads) {
+            if (t.joinable())
+                t.join();
+
         }
     }
 }

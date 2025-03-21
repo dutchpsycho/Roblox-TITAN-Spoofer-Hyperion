@@ -489,7 +489,7 @@ namespace Services {
     inline void TITAN() {
         std::string art = R"(
        ++x                                             +++x              
-        +;++x           TITAN Spoofer V1.4          +++;+x               
+        +;++x              TITAN Spoofer            +++;+x               
          +;;;;++          Swedish.Psycho         +++;;;++                
          +;::::;;++                           ++;;;;;;;+                 
           +:::::::;; ++                   ++x;;:::::::+                  
@@ -511,7 +511,7 @@ namespace Services {
                           ;:::;; ;;:::;+                                 
                           ;;::;; ;;:::;                                  
                           ;;::;; ;;:::;                                  
-                          ;:::;; ;;:::;+                                 
+                          ;:::;; ;;:::;+                                  
                           +;:::; ;::::+                                  
                           ++:::;x;:::;+                                  
                            +;:::;;::;+                                   
