@@ -476,7 +476,7 @@ namespace Services {
     }
 
     // VISUALS
-
+  
     inline void EnableANSIColors() {
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD dwMode = 0;
@@ -491,7 +491,6 @@ namespace Services {
         std::cout << "\033[38;5;" << colorCode << "m"
                   << "\n============ " << sectionName << " ============\n"
                   << "\033[0m";
-    }
 
 #pragma warning(disable : 4566)
 
