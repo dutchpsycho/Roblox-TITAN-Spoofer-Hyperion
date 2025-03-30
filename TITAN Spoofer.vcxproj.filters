@@ -1,66 +1,72 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Header">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
+    <Filter Include="Header\Core">
+      <UniqueIdentifier>{9ca991e5-8a33-4df2-9c3d-a0eb70447909}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\Util">
+      <UniqueIdentifier>{f66c41fd-2178-4ae6-a36e-c1d49ae393c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Container\Header\FsCleaner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Container\Services\Services.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Container\Services\Defs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Container\Header\Mac.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Container\Header\WMI.h">
+      <Filter>Header\Core</Filter>
     </ClInclude>
     <ClInclude Include="Container\Header\Registry.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Container\Header\WMI.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Container\Header\Mac.h">
+      <Filter>Header\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Header\FsCleaner.h">
+      <Filter>Header\Core</Filter>
     </ClInclude>
     <ClInclude Include="Container\Header\COM.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Services\Defs.h">
+      <Filter>Header\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Container\Services\Services.hpp">
+      <Filter>Header\Util</Filter>
     </ClInclude>
     <ClInclude Include="TITAN.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Container\Core\FsCleaner.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Master.cc" />
     <ClCompile Include="Container\Core\Mac.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Container\Core\COM.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Container\Core\Registry.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Container\Core\WMI.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Container\RC\App.rc">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource</Filter>
     </ResourceCompile>
   </ItemGroup>
 </Project>
