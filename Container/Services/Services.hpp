@@ -475,47 +475,22 @@ namespace Services {
         }
     }
 
-
     // VISUALS
-
-    inline bool IsANSISupported() {
+  
+    inline void EnableANSIColors() {
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD dwMode = 0;
-        if (!GetConsoleMode(hOut, &dwMode)) return false;
-        dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-        return SetConsoleMode(hOut, dwMode) != 0;
-    }
-
-    inline void SetWinColor(int colorCode) {
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        SetConsoleTextAttribute(hConsole, static_cast<WORD>(colorCode));
-    }
-
-    inline void ResetWinColor() {
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        SetConsoleTextAttribute(hConsole, 7);
+        // Try enabling ANSI escape codes
+        if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &dwMode)) {
+            SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+        }
     }
 
     inline void SectHeader(const std::string& sectionName, int colorCode) {
-#ifdef _WIN32
-        static bool ansi = IsANSISupported();
-        if (ansi) {
-            std::cout << "\033[38;5;" << colorCode << "m"
-                << "\n============ " << sectionName << " ============\n"
-                << "\033[0m";
-        }
-        else {
-            int basicColor = colorCode % 16;
-            SetWinColor(basicColor);
-            std::cout << "\n============ " << sectionName << " ============\n";
-            ResetWinColor();
-        }
-#else
+        EnableANSIColors(); // Ensure ANSI codes are enabled
         std::cout << "\033[38;5;" << colorCode << "m"
-            << "\n============ " << sectionName << " ============\n"
-            << "\033[0m";
-#endif
-    }
+                  << "\n============ " << sectionName << " ============\n"
+                  << "\033[0m";
 
 #pragma warning(disable : 4566)
 
