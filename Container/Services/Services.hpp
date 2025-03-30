@@ -475,13 +475,22 @@ namespace Services {
         }
     }
 
-
     // VISUALS
 
+    inline void EnableANSIColors() {
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD dwMode = 0;
+        // Try enabling ANSI escape codes
+        if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &dwMode)) {
+            SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+        }
+    }
+
     inline void SectHeader(const std::string& sectionName, int colorCode) {
+        EnableANSIColors(); // Ensure ANSI codes are enabled
         std::cout << "\033[38;5;" << colorCode << "m"
-            << "\n============ " << sectionName << " ============\n"
-            << "\033[0m";
+                  << "\n============ " << sectionName << " ============\n"
+                  << "\033[0m";
     }
 
 #pragma warning(disable : 4566)
