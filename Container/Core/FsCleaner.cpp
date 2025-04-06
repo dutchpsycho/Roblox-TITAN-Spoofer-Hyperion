@@ -93,58 +93,90 @@ void FsCleaner::run() {
 void FsCleaner::Install() {
     Services::SectHeader("Roblox Installation", 203);
 
-    std::wstring userProfile = Services::GetUser();
-    std::wstring bloxstrapPath = fs::path(userProfile) / L"AppData/Local/Bloxstrap/Bloxstrap.exe";
-    std::wstring rbxPath = fs::path(Services::GetSysDrive()) / L"Program Files (x86)/Roblox/Versions/RobloxPlayerInstaller.exe";
+    try {
+        std::wstring userProfile = Services::GetUser();
+        std::wstring systemDrive = Services::GetSysDrive();
 
-    std::atomic<bool> stopMon(false);
+        std::wstring bloxstrapPath = fs::path(userProfile) / L"AppData/Local/Bloxstrap/Bloxstrap.exe";
+        std::wstring fishstrapPath = fs::path(userProfile) / L"AppData/Local/Fishstrap/Fishstrap.exe";
+        std::wstring rbxPath = fs::path(systemDrive) / L"Program Files (x86)/Roblox/Versions/RobloxPlayerInstaller.exe";
 
-    auto monRbx = [&stopMon]() {
-        while (!stopMon) {
-            HWND robloxWindow = FindWindowW(nullptr, L"Roblox");
-            if (robloxWindow) {
-                DWORD processId = 0;
-                GetWindowThreadProcessId(robloxWindow, &processId);
+        std::atomic<bool> stopMon(false);
 
-                if (processId != 0) {
-                    HANDLE processHandle = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
-                    if (processHandle) {
-                        TerminateProcess(processHandle, 0);
-                        CloseHandle(processHandle);
-                        stopMon = true;
-                        return;
+        auto monRbx = [&stopMon]() {
+            while (!stopMon) {
+                HWND robloxWindow = FindWindowW(nullptr, L"Roblox");
+                if (robloxWindow) {
+                    DWORD processId = 0;
+                    GetWindowThreadProcessId(robloxWindow, &processId);
+                    if (processId != 0) {
+                        HANDLE processHandle = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
+                        if (processHandle) {
+                            TerminateProcess(processHandle, 0);
+                            CloseHandle(processHandle);
+                            stopMon = true;
+                            return;
+                        }
+                    }
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(250));
+            }
+            };
+
+        auto tryLnk = [](const std::wstring& name) -> std::optional<std::wstring> {
+            std::vector<fs::path> lnkPaths = {
+                L"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\" + name,
+                Services::GetUser() + L"\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\" + name
+            };
+
+            for (const auto& path : lnkPaths) {
+                if (fs::exists(path)) {
+                    std::wstring resolved = Services::ResolveTarget(path);
+                    if (!resolved.empty() && fs::exists(resolved)) {
+                        return resolved;
                     }
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+            return std::nullopt;
+            };
+
+        std::optional<std::wstring> exeToRun;
+
+        if (fs::exists(bloxstrapPath)) {
+            exeToRun = bloxstrapPath;
         }
-        };
 
-    if (fs::exists(bloxstrapPath)) {
+        else if (auto fishstrapLnk = tryLnk(L"Fishstrap.lnk"); fishstrapLnk.has_value()) {
+            exeToRun = fishstrapLnk.value();
+        }
 
-        ShellExecuteW(nullptr, L"open", bloxstrapPath.c_str(), L"-player", nullptr, SW_HIDE);
+        else if (fs::exists(fishstrapPath)) {
+            exeToRun = fishstrapPath;
+        }
 
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+        if (exeToRun.has_value() && !exeToRun->empty()) {
+            ShellExecuteW(nullptr, L"open", exeToRun->c_str(), L"-player", nullptr, SW_HIDE);
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+            std::thread monThread(monRbx);
+            monThread.join();
+            std::wcout << L"Reinstalled via: " << *exeToRun << L"\n";
+        }
 
-        std::thread monThread(monRbx);
+        else if (fs::exists(rbxPath)) {
+            ShellExecuteW(nullptr, L"open", rbxPath.c_str(), nullptr, nullptr, SW_HIDE);
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+            std::wcout << L"Roblox installer executed.\n";
+        }
 
-        monThread.join();
-        std::wcout << L"Reinstalled via Bloxstrap.\n";
+        else {
+            std::wcerr << L"[!] No installer found: Bloxstrap, Fishstrap, or Roblox.\n";
+        }
+
+        stopMon = true;
+    }
+    catch (const std::exception& ex) {
+        std::cerr << "Install() Exception: " << ex.what() << "\n";
 
     }
-
-    else if (fs::exists(rbxPath)) {
-
-        ShellExecuteW(nullptr, L"open", rbxPath.c_str(), nullptr, nullptr, SW_HIDE);
-
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        std::wcout << L"Roblox installer executed.\n";
-
-    }
-
-    else {
-        throw std::runtime_error("Neither Bloxstrap nor Roblox installer found..?");
-    }
-
-    stopMon = true;
 }
