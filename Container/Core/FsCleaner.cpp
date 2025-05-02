@@ -1,182 +1,193 @@
-#include "../Header/FsCleaner.h"
+﻿#include "../Header/FsCleaner.h"
 #include "../Services/Services.hpp"
 
 namespace fs = std::filesystem;
 
-void FsCleaner::RmvReferents(const std::filesystem::path& filePath, const std::wstring& itemClass) {
-    if (!fs::exists(filePath)) {
+struct PathHelper {
+    static std::wstring user() { return Services::GetUser(); }
+    static std::wstring sys() { return Services::GetSysDrive(); }
+
+    static std::optional<fs::path> resolveShortcut(const std::wstring& name) {
+        std::vector<fs::path> shortcuts = {
+            fs::path(sys()) / L"ProgramData" / L"Microsoft" / L"Windows" / L"Start Menu" / L"Programs" / name,
+            fs::path(user()) / L"AppData" / L"Roaming" / L"Microsoft" / L"Windows" / L"Start Menu" / L"Programs" / name
+        };
+
+        for (const auto& p : shortcuts) {
+            if (fs::exists(p)) {
+                auto target = Services::ResolveTarget(p);
+                if (!target.empty() && fs::exists(target))
+                    return fs::path(target);
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    static std::optional<fs::path> findExe(const std::wstring& exeName) {
+        std::vector<std::wstring> roots = {
+            sys() + L"\\Program Files\\",
+            sys() + L"\\Program Files (x86)\\",
+            user() + L"\\AppData\\Local\\"
+        };
+
+        for (const auto& root : roots) {
+            std::error_code ec;
+            for (auto it = fs::recursive_directory_iterator(root,
+                fs::directory_options::skip_permission_denied,
+                ec);
+                it != fs::recursive_directory_iterator();
+                it.increment(ec)) {
+                if (!ec && it->path().filename() == exeName)
+                    return it->path();
+            }
+        }
+        return std::nullopt;
+    }
+
+    static fs::path fallbackBloxstrap() { return fs::path(user()) / L"AppData" / L"Local" / L"Bloxstrap" / L"Bloxstrap.exe"; }
+    static fs::path fallbackFishstrap() { return fs::path(user()) / L"AppData" / L"Local" / L"Fishstrap" / L"Fishstrap.exe"; }
+    static fs::path fallbackRoblox() { return fs::path(sys()) / L"Program Files (x86)" / L"Roblox" / L"Versions" / L"RobloxPlayerInstaller.exe"; }
+};
+
+static void cleanVers(const fs::path& baseDir) {
+    if (!fs::exists(baseDir)) return;
+    for (const auto& d : fs::directory_iterator(baseDir)) {
+        auto name = d.path().filename().wstring();
+        if (d.is_directory() && name.rfind(L"version-", 0) == 0) {
+            Services::BulkDelete(d.path(), {
+                L"RobloxPlayerBeta.exe",
+                L"RobloxPlayerBeta.dll",
+                L"RobloxCrashHandler.exe",
+                L"RobloxPlayerLauncher.exe"
+                });
+        }
+    }
+}
+
+void FsCleaner::RmvReferents(const fs::path& filePath, const std::wstring& itemClass) {
+    if (!fs::exists(filePath))
         throw std::runtime_error("File does not exist: " + filePath.string());
-    }
 
-    std::wifstream inFile(filePath);
-    if (!inFile.is_open()) {
+    std::wifstream in(filePath);
+    if (!in.is_open())
         throw std::runtime_error("Failed to open file: " + filePath.string());
-    }
 
-    std::wstringstream buffer;
-    buffer << inFile.rdbuf();
-    inFile.close();
-    std::wstring content = buffer.str();
+    std::wstringstream buf;
+    buf << in.rdbuf();
+    in.close();
 
-    std::wregex referRegex(LR"(<Item class=\")" + itemClass + LR"(" referent=\"[^\"]+\">)");
+    std::wstring content = buf.str();
+    std::wregex rx(LR"(<Item class=\")" + itemClass + LR"(" referent=\"[^\"]+\">)");
+    std::wstring rep = L"<Item class=\"" + itemClass + L"\" referent=\"" + Services::genRand() + L"\">";
 
-    std::wstring replacement = L"<Item class=\"" + itemClass + L"\" referent=\"" + Services::genRand() + L"\">";
-    content = std::regex_replace(content, referRegex, replacement);
+    content = std::regex_replace(content, rx, rep);
 
-    std::wofstream outFile(filePath);
-    if (!outFile.is_open()) {
+    std::wofstream out(filePath);
+
+    if (!out.is_open())
         throw std::runtime_error("Failed to write to file -> " + filePath.string());
-    }
-    outFile << content;
-    outFile.close();
+    out << content;
 }
 
 void FsCleaner::CleanRbx() {
-    std::wstring systemDrive = Services::GetSysDrive();
-    std::wstring userProfile = Services::GetUser();
 
-    std::vector<fs::path> startMenuPaths = {
-        fs::path(systemDrive) / L"ProgramData/Microsoft/Windows/Start Menu/Programs/Roblox/Roblox Player.lnk",
-        fs::path(userProfile) / L"AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Roblox/Roblox Player.lnk"
-    };
+    // roblox
+    if (auto robLnk = PathHelper::resolveShortcut(L"Roblox Player.lnk")) {
+        cleanVers(robLnk->parent_path().parent_path());
+    }
+    cleanVers(fs::path(PathHelper::sys()) / L"Program Files (x86)/Roblox/Versions");
 
-    for (const auto& rbxSPath : startMenuPaths) {
-        if (fs::exists(rbxSPath)) {
-            std::wstring rbxTarget = Services::ResolveTarget(rbxSPath);
-            fs::path rbxDir = fs::path(rbxTarget).parent_path().parent_path();
-            for (const auto& entry : fs::directory_iterator(rbxDir)) {
-                if (entry.is_directory() && entry.path().filename().wstring().find(L"version-") == 0) {
-                    Services::BulkDelete(entry.path(), { L"RobloxPlayerBeta.exe", L"RobloxPlayerBeta.dll", L"RobloxCrashHandler.exe", L"RobloxPlayerLauncher.exe" });
-                }
-            }
-        }
+    // bloxstrap
+    if (auto bxLnk = PathHelper::resolveShortcut(L"Bloxstrap.lnk")) {
+        cleanVers(bxLnk->parent_path() / L"Versions");
+    }
+    cleanVers(fs::path(PathHelper::user()) / L"AppData/Local/Bloxstrap/Versions");
+
+    // fishstrap
+    if (auto fsLnk = PathHelper::resolveShortcut(L"Fishstrap.lnk")) {
+        cleanVers(fsLnk->parent_path() / L"Versions");
+    }
+    cleanVers(fs::path(PathHelper::user()) / L"AppData/Local/Fishstrap/Versions");
+
+    // temp & logs
+    fs::remove_all(fs::path(PathHelper::user()) / L"AppData/Local/Temp/Roblox");
+    fs::path logs = fs::path(PathHelper::user()) / L"AppData/Local/Roblox";
+
+    for (const std::wstring& sub : { L"logs", L"LocalStorage", L"Downloads" }) {
+        fs::remove_all(logs / sub);
+        std::wcout << L"Deleted -> " << (logs / sub) << std::endl;
     }
 
-    fs::path bloxstrapSPath = fs::path(userProfile) / L"AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Bloxstrap.lnk";
-    if (fs::exists(bloxstrapSPath)) {
-        std::wstring bloxstrapTarget = Services::ResolveTarget(bloxstrapSPath);
-        fs::path bloxstrapDir = fs::path(bloxstrapTarget).parent_path();
-        for (const auto& entry : fs::directory_iterator(bloxstrapDir / L"Versions")) {
-            if (entry.is_directory() && entry.path().filename().wstring().find(L"version-") == 0) {
-                Services::BulkDelete(entry.path(), { L"RobloxPlayerBeta.exe", L"RobloxPlayerBeta.dll", L"RobloxCrashHandler.exe", L"RobloxPlayerLauncher.exe" });
-            }
-        }
-    }
-
-    fs::path tempDir = fs::path(userProfile) / L"AppData/Local/Temp/Roblox";
-    fs::remove_all(tempDir);
-    std::wcout << L"Deleted -> " << tempDir << std::endl;
-
-    fs::path robloxLogsDir = fs::path(userProfile) / L"AppData/Local/Roblox";
-    for (const auto& subDir : { L"logs", L"LocalStorage", L"Downloads" }) {
-        fs::path fullPath = robloxLogsDir / subDir;
-        fs::remove_all(fullPath);
-        std::wcout << L"Deleted -> " << fullPath << std::endl;
-    }
-
-    RmvReferents(robloxLogsDir / L"AnalysticsSettings.xml", L"GoogleAnalyticsConfiguration");
-    RmvReferents(robloxLogsDir / L"GlobalBasicSettings_13.xml", L"UserGameSettings");
-
-    std::cout << "Replaced Global & Analytic Referents" << std::endl;
-}
-
-void FsCleaner::run() {
-    Services::SectHeader("File System Cleaning", 202);
-    try {
-        CleanRbx();
-    }
-    catch (const std::exception& ex) {
-        std::cerr << "Error: " << ex.what() << '\n';
-    }
+    RmvReferents(logs / L"AnalysticsSettings.xml", L"GoogleAnalyticsConfiguration");
+    RmvReferents(logs / L"GlobalBasicSettings_13.xml", L"UserGameSettings");
 }
 
 void FsCleaner::Install() {
     Services::SectHeader("Roblox Installation", 203);
 
-    try {
-        std::wstring userProfile = Services::GetUser();
-        std::wstring systemDrive = Services::GetSysDrive();
-
-        std::wstring bloxstrapPath = fs::path(userProfile) / L"AppData/Local/Bloxstrap/Bloxstrap.exe";
-        std::wstring fishstrapPath = fs::path(userProfile) / L"AppData/Local/Fishstrap/Fishstrap.exe";
-        std::wstring rbxPath = fs::path(systemDrive) / L"Program Files (x86)/Roblox/Versions/RobloxPlayerInstaller.exe";
-
-        std::atomic<bool> stopMon(false);
-
-        auto monRbx = [&stopMon]() {
-            while (!stopMon) {
-                HWND robloxWindow = FindWindowW(nullptr, L"Roblox");
-                if (robloxWindow) {
-                    DWORD processId = 0;
-                    GetWindowThreadProcessId(robloxWindow, &processId);
-                    if (processId != 0) {
-                        HANDLE processHandle = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
-                        if (processHandle) {
-                            TerminateProcess(processHandle, 0);
-                            CloseHandle(processHandle);
-                            stopMon = true;
-                            return;
-                        }
-                    }
-                }
-                std::this_thread::sleep_for(std::chrono::milliseconds(250));
-            }
-            };
-
-        auto tryLnk = [](const std::wstring& name) -> std::optional<std::wstring> {
-            std::vector<fs::path> lnkPaths = {
-                L"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\" + name,
-                Services::GetUser() + L"\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\" + name
-            };
-
-            for (const auto& path : lnkPaths) {
-                if (fs::exists(path)) {
-                    std::wstring resolved = Services::ResolveTarget(path);
-                    if (!resolved.empty() && fs::exists(resolved)) {
-                        return resolved;
+    std::atomic<bool> stopMon(false);
+    auto monitor = [&]() {
+        while (!stopMon) {
+            if (HWND h = FindWindowW(nullptr, L"Roblox")) {
+                DWORD pid = 0;
+                GetWindowThreadProcessId(h, &pid);
+                if (pid) {
+                    if (HANDLE p = OpenProcess(PROCESS_TERMINATE, FALSE, pid)) {
+                        TerminateProcess(p, 0);
+                        CloseHandle(p);
+                        stopMon = true;
+                        return;
                     }
                 }
             }
-
-            return std::nullopt;
-            };
-
-        std::optional<std::wstring> exeToRun;
-
-        if (fs::exists(bloxstrapPath)) {
-            exeToRun = bloxstrapPath;
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
         }
+        };
 
-        else if (auto fishstrapLnk = tryLnk(L"Fishstrap.lnk"); fishstrapLnk.has_value()) {
-            exeToRun = fishstrapLnk.value();
-        }
+    std::wstring exe;
+    // search order
+    if (auto p = PathHelper::findExe(L"Bloxstrap.exe"))            exe = p->wstring();
 
-        else if (fs::exists(fishstrapPath)) {
-            exeToRun = fishstrapPath;
-        }
+    else if (auto p = PathHelper::findExe(L"Fishstrap.exe"))       exe = p->wstring();
+    else if (auto p = PathHelper::resolveShortcut(L"Bloxstrap.lnk")) exe = p->wstring();
+    else if (auto p = PathHelper::resolveShortcut(L"Fishstrap.lnk")) exe = p->wstring();
+    else if (fs::exists(PathHelper::fallbackBloxstrap()))          exe = PathHelper::fallbackBloxstrap().wstring();
+    else if (fs::exists(PathHelper::fallbackFishstrap()))          exe = PathHelper::fallbackFishstrap().wstring();
 
-        if (exeToRun.has_value() && !exeToRun->empty()) {
-            ShellExecuteW(nullptr, L"open", exeToRun->c_str(), L"-player", nullptr, SW_HIDE);
+    if (!exe.empty()) {
+        ShellExecuteW(nullptr, L"open", exe.c_str(), L"-player", nullptr, SW_HIDE);
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::thread(monitor).join();
+    }
+
+    else {
+        std::wstring rbx;
+
+        if (auto p = PathHelper::findExe(L"RobloxPlayerInstaller.exe")) rbx = p->wstring();
+        else if (fs::exists(PathHelper::fallbackRoblox()))              rbx = PathHelper::fallbackRoblox().wstring();
+
+        if (!rbx.empty()) {
+            ShellExecuteW(nullptr, L"open", rbx.c_str(), nullptr, nullptr, SW_HIDE);
             std::this_thread::sleep_for(std::chrono::seconds(3));
-            std::thread monThread(monRbx);
-            monThread.join();
-            std::wcout << L"Reinstalled via: " << *exeToRun << L"\n";
-        }
-
-        else if (fs::exists(rbxPath)) {
-            ShellExecuteW(nullptr, L"open", rbxPath.c_str(), nullptr, nullptr, SW_HIDE);
-            std::this_thread::sleep_for(std::chrono::seconds(3));
-            std::wcout << L"Roblox installer executed.\n";
         }
 
         else {
-            std::wcerr << L"[!] No installer found: Bloxstrap, Fishstrap, or Roblox.\n";
+            std::wcerr << L"[!] no installer found\n";
         }
-
-        stopMon = true;
     }
-    catch (const std::exception& ex) {
-        std::cerr << "Install() Exception: " << ex.what() << "\n";
 
+    stopMon = true;
+}
+
+void FsCleaner::run() {
+    Services::SectHeader("File System Cleaning", 202);
+
+    try {
+        CleanRbx();
+    }
+
+    catch (const std::exception& ex) {
+        std::cerr << "Error in FsCleaner::run(): " << ex.what() << '\n';
     }
 }
