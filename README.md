@@ -1,4 +1,4 @@
-# **TITAN Spoofer** (Roblox, Hyperion)
+# **TITAN Spoofer** (Roblox, Byfron)
 
 **TITAN Softwork Solutions © 2024**
 
@@ -8,46 +8,50 @@
 ![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)  
 ![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)  
 
----
+<br>
 
 ## **📌 Overview**
 
-[TITAN](https://titansoftwork.net)'s Spoofer is a security utility designed to prevent account bans while using exploits on **Roblox for Windows/Web**.  
+[TITAN](https://titansoftwork.net)'s Spoofer is a tool designed to prevent your alts from getting banned when exploiting on **Web/Windows Roblox**
 
-With Roblox integrating a ban API and combining Hyperion’s (Byfron) detection mechanisms, exploit developers have begun offering paid spoofers. I've decided to give the community a **free, open-source** solution.  
+With Roblox integrating a ban API and combining Hyperion’s (Byfron) detection mechanisms, exploit developers have begun offering paid spoofers. I've decided to give the community a **free, open-source** solution. 
 
-### **How It Works**
-The spoofer anonymizes system identifiers before and after an exploit session, effectively resetting your system’s digital footprint. This prevents Roblox from associating your device with previous accounts played on.
+### How It Works
+When ran, the spoofer removes all Roblox traces, randomizes your PC's fingerprint & reinstalls. The optimal way for this to be used is to spoof before & after playing on an exploiting account.
 
----
+<br>
 
-## **💎 Features**
-- **Hyperion HWID Bypass** – Spoofs all relevant hardware identifiers monitored by Hyperion.  
-- **Automated Roblox Reinstallation** – Uses **Bloxstrap** for reinstallation, with **RobloxInstaller** as a fallback.  
-- **Full Hardware Unban** – Restores access if you are HWID-banned by Hyperion.  
-- **Antiban Guide** – Includes a comprehensive guide on avoiding bans and recovering accounts, available in the **[TITAN Discord](https://titansoftwork.net)**.  
+## 📢 More information/FAQ
 
----
+I've provided a full exploiting guide, antiban guide & unban guide in the **[TITAN Discord](https://titansoftwork.net).**
 
-## **⚠️ Important Notes**
+### ♻️ Compatability
+This works with the following
+- Bloxstrap
+- Fishstrap
+- AWP
+- Any other executor to my knowledge
+
+### **⚠️ Important Notes**
 - This tool **does not** unban **Roblox accounts** that have been banned **onsite** (i.e., account-level bans managed server-side).  
-- This does not apply to **individual game bans**, as those are enforced by specific game developers.  
+- This does not apply to **individual game bans**, as those are enforced by specific game developers.
+- This does NOT prevent IP bans, this does NOT act as a VPN.
 
----
+<br>
 
 ## **📦 Installation & Setup**
 ### **🔽 Download**
-For prebuilt binaries, download the latest version from **[TITAN](https://titansoftwork.net).**  
+For prebuilt binaries (exe's), download the latest version from the **[Discord](https://titansoftwork.net).**  
 
-### **📚 Requirements**
-- **Visual Studio** (Latest Version)  
-- **C++ Build Tools** (Install via Visual Studio Installer)  
+### **📚 Requirements for compiling**
+- **Visual Studio**
+- **C++ Build Tools** (Install via Visual Studio Installer)
 
 ### **🖥️ Build from Source**
 1. **Clone the Repository**  
     ```sh
     git clone https://github.com/dutchpsycho/Roblox-TITAN-Spoofer-Hyperion.git
-    cd TITAN-Spoofer
+    cd Roblox-TITAN-Spoofer-Hyperion
     ```
 
 2. **Open the Solution File (`.sln`)**  
@@ -58,13 +62,13 @@ For prebuilt binaries, download the latest version from **[TITAN](https://titans
     - Click **Build Solution**.  
     - The compiled executable (`.exe`) will be located in the `/Release` directory.  
 
----
+<br>
 
-## **💻 Developer Integration**
-### **🔹 `TITAN.h`**
-A lightweight API is provided via **`TITAN.h`**, allowing seamless integration of the spoofer into external projects. Logging is fully configurable.
+## 💻 Developer Integration*
+### `TITAN.h`
+A lightweight API is provided via **`TITAN.h`**, allowing seamless integration of the spoofer into external projects.
 
-#### **Example Usage**
+#### Example Usage
 ```cpp
 #include "TITAN.h"
 
@@ -73,21 +77,20 @@ std::thread TitanThread = TitanSpoofer::run(true);
 TitanThread.join();
 ```
 
-### **🔹 API Reference**
-#### **Function:** `TitanSpoofer::run(bool logs)`
-- **Parameters:**
-  - `logs` (`true`/`false`): Enables or disables logging. If `false`, suppresses all `std::cout` output except critical errors.  
-- **Return Value:** A `std::thread` object executing the spoofing process asynchronously.  
+### **API**
+```cpp
+Services::KillRbx();
+FsCleaner::run();
+MAC::MacSpoofer::run();
+Registry::RegSpoofer::run();
+WMI::WmiSpoofer::run();
+FsCleaner::Install();
+```
 
----
+<br>
 
-## **📩 Support**
-For problems, open a support ticket via the **[TITAN Discord](https://titansoftwork.net)**.  
+## 📥 Submitting a Contribution
+Contributions are welcome.
 
-## **📥 Submitting a Contribution**
-Contributions are welcome. Code can always improve.
-
----
-
-## **⚠️ Legal Disclaimer**
+## ⚠️ Legal Disclaimer
 This software is provided for **educational and research purposes only**. The use of this tool to **circumvent security protections** or violate the terms of service of **Roblox or any other platform** is strictly prohibited. The developers **do not endorse or condone** any illegal activities and assume no liability for misuse.
