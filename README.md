@@ -12,7 +12,7 @@
 
 ## **📌 Overview**
 
-[TITAN](https://titansoftwork.net)'s Spoofer is a tool designed to prevent your alts from getting banned when exploiting on **Web/Windows Roblox**
+[TITAN](https://hub.titansoftwork.net)'s Spoofer is a tool designed to prevent your alts from getting banned when exploiting on **Web/Windows Roblox**
 
 With Roblox integrating a ban API and combining Hyperion’s (Byfron) detection mechanisms, exploit developers have begun offering paid spoofers. I've decided to give the community a **free, open-source** solution. 
 
@@ -23,7 +23,7 @@ When ran, the spoofer removes all Roblox traces, randomizes your PC's fingerprin
 
 ## 📢 More information/FAQ
 
-I've provided a full exploiting guide, antiban guide & unban guide in the **[TITAN Discord](https://titansoftwork.net).**
+I've provided a full exploiting guide, antiban guide & unban guide in the **[TITAN Discord](https://hub.titansoftwork.net).**
 
 ### ♻️ Compatability
 This works with the following
@@ -41,7 +41,7 @@ This works with the following
 
 ## **📦 Installation & Setup**
 ### **🔽 Download**
-For prebuilt binaries (exe's), download the latest version from the **[Discord](https://titansoftwork.net).**  
+For prebuilt binaries (exe's), download the latest version from the **[Discord](https://hub.titansoftwork.net).**  
 
 ### **📚 Requirements for compiling**
 - **Visual Studio**
