@@ -14,7 +14,9 @@
 
 [TITAN](https://hub.titansoftwork.net)'s Spoofer is a tool designed to prevent your alts from getting banned when exploiting on **Web/Windows Roblox**
 
-With Roblox integrating a ban API and combining Hyperion’s (Byfron) detection mechanisms, exploit developers have begun offering paid spoofers. I've decided to give the community a **free, open-source** solution. 
+With Roblox integrating a ban API and combining Hyperion’s (Byfron) detection mechanisms, exploit developers have begun offering paid spoofers. I've decided to give the community a **free, open-source** solution.
+
+This should be used conjunction with a VPN and knowledge on Roblox's Ban API inner-workings, (research on this can be found in TITAN's Discord)
 
 ### How It Works
 When ran, the spoofer removes all Roblox traces, randomizes your PC's fingerprint & reinstalls. The optimal way for this to be used is to spoof before & after playing on an exploiting account.
