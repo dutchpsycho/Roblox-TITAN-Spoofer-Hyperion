@@ -1,11 +1,5 @@
 # **TITAN Spoofer** (Roblox, Byfron, Hyperion)
 
-**TITAN Softwork Solutions © 2025**
-
-![CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)  
-![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)  
-
-
 ![TITAN Spoofer](./Images/All.png)
 ![TITAN](https://avatars.githubusercontent.com/u/199383721?s=200&v=4) 
 
@@ -19,8 +13,11 @@ With Roblox integrating a ban API and combining Hyperion’s (Byfron) detection 
 
 This should be used conjunction with a VPN and knowledge on Roblox's Ban API inner-workings, (research on this can be found in TITAN's [Discord](https://hub.titansoftwork.net)
 
+
 ### How It Works
 When ran, the spoofer removes all Roblox traces, randomizes your PC's fingerprint & reinstalls Roblox. The intended way for this to be used is to spoof before & after playing on an exploiting account.
+
+![TITAN Softwork Solutions](https://img.shields.io/badge/TITAN_Softwork_Solutions-Discord-blue?style=for-the-badge&logo=discord)
 
 <br>
 
@@ -39,8 +36,8 @@ This works with the following
 <br>
 
 # Installation & Setup
-### 🔽 Download
-For prebuilt binaries (exe's), download the latest version from the **[Discord](https://hub.titansoftwork.net).**  
+### Download
+For prebuilt binaries (exe's), download the latest version from the **[Discord](https://hub.titansoftwork.net)** 
 
 ### Requirements for compiling
 - **Visual Studio**
