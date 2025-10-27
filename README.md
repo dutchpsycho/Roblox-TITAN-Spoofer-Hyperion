@@ -91,7 +91,7 @@ TitanThread.join();
 - The Spoofer does NOT unban you from specific games OR on-site bans (Eg; Roblox website bans)
 
 ## SUPPORT
-For problems, open a support ticket via the **[TITAN Discord](https://hub.titansoftwork.net)**.  
+For problems, open a support ticket via the **[TITAN Discord](https://hub.titansoftwork.com)**.  
 
 
 ## LICENSE
