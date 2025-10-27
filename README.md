@@ -13,6 +13,10 @@ The Spoofer prevents the other accounts on your PC from being banned when exploi
 
 With Roblox integrating a ban API and combining Hyperion (Byfron's) detection mechanisms, exploit developers have begun offering paid spoofers. I've decided to give the community a **free, open-source** solution.  
 
+High-Level Overview of Roblox's System's in motion 
+
+![Diagram](./Images/RobloxBanSystemProtON.png)
+
 ### HOW IT WORKS
 
 The spoofer deletes Roblox & all relevant files then changes hardware identifiers (HWID's) that Roblox specifically checks. Then, (Assuming you have Bloxstrap or Fishstrap) will automatically re-install Roblox. This is done purely in usermode and any altered values will reset on PC restart.
