@@ -1,9 +1,6 @@
 # **TITAN Spoofer** (Roblox)
 
-![TITAN](https://avatars.githubusercontent.com/u/199383721?s=200&v=4) 
-
 [![Discord](https://img.shields.io/discord/1240608336005828668?label=TITAN%20Softworks&logo=discord&color=5865F2&style=flat)](https://discord.gg/yUWyvT9JyP)
-
 
 # OVERVIEW
 
