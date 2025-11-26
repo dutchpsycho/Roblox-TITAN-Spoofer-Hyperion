@@ -94,10 +94,13 @@ TitanThread.join();
 ## SUPPORT
 For problems, open a support ticket via the **[TITAN Discord](https://hub.titansoftwork.com)**.  
 
+## License
 
-## LICENSE
-Attribution-NonCommercial-NoDerivatives 4.0 International
-TITAN Softwork Solutions © 2024 CC BY-NC-ND 4.0
+TITAN Spoofer is licensed under Apache 2.0 with the Commons Clause.
+
+- You may use, modify, and redistribute the software with attribution.
+- You may **not Sell** the software or any service whose value derives substantially from it.
+- Commercial use is prohibited unless you obtain explicit written permission from TITAN Softwork Solutions.
 
 ## LEGAL
 This software is provided for **educational and research purposes only**. The use of this tool to **circumvent security protections** or violate the terms of service of **Roblox or any other platform** is strictly prohibited. The developers **do not endorse or condone** any illegal activities and assume no liability for misuse.
